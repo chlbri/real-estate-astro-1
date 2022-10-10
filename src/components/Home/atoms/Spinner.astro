@@ -1,0 +1,22 @@
+---
+export type Props = {
+  color?: string;
+  size?: number;
+};
+
+const { size = 60, color = 'black' } = Astro.props as Props;
+
+const BORDER_RATIO = 4 / 100;
+---
+
+<div
+  class='rounded-full animate-spin'
+  style={`
+  border-color:${color}; 
+  width: ${size}px; 
+  height: ${size}px; 
+  border-top-width: ${size * BORDER_RATIO}px;
+  border-bottom-width: ${size * BORDER_RATIO}px;
+  `}
+>
+</div>

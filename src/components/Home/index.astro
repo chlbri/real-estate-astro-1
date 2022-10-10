@@ -1,0 +1,32 @@
+---
+import MainLayout from '@-layouts/MainLayout.astro';
+import Spinner from './atoms/Spinner.astro';
+import Header from './molecules/Header.astro';
+import { Dropdown } from './organisms/Dropdown';
+---
+
+<MainLayout title={'Home'}>
+  <Header />
+  <div
+    class='px-[30px] py-6 max-w-[1170px] mx-auto flex flex-col lg:flex-row justify-between gap-4 lg:gap-x-3 relative lg:-top-4 lg:shadow-1 bg-white lg:bg-transparent lg:backdrop-blur rounded-lg w-full'
+  >
+    <button
+      class='bg-violet-700 hover:bg-violet-800 transition w-full lg:max-w-[162px] h-16 rounded-lg flex justify-center items-center text-white text-lg'
+    >
+      <svg
+        xmlns='http://www.w3.org/2000/svg'
+        viewBox='0 0 24 24'
+        width='24'
+        height='24'
+        class='fill-white'
+      >
+        <path fill='none' d='M0 0h24v24H0z'></path>
+        <path
+          d='M11 2c4.968 0 9 4.032 9 9s-4.032 9-9 9-9-4.032-9-9 4.032-9 9-9zm0 16c3.867 0 7-3.133 7-7 0-3.868-3.133-7-7-7-3.868 0-7 3.132-7 7 0 3.867 3.132 7 7 7zm8.485.071l2.829 2.828-1.415 1.415-2.828-2.829 1.414-1.414z'
+        ></path>
+      </svg>
+    </button>
+  </div>
+  <Dropdown />
+  <Spinner />
+</MainLayout>
