@@ -8,11 +8,15 @@ export const getCountries = context({
 });
 
 export const getCurrentCountry = context({
-  accessor: (context) => context.front.dropDowns.country.current,
+  accessor: (context) => context.front.dropDowns.country,
 });
 
 export function isCurrentCountry(country: string) {
   return getCurrentCountry() === country;
+}
+
+export function dropdownCountryCanBeOpened() {
+  return !matches('dropdowns.country.idle');
 }
 
 export const filterCountries = sender('FILTER_BY_COUNTRY');

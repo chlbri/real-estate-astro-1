@@ -13,16 +13,7 @@ export const initialContext = {
     data: MAIN_DATA,
   },
   front: {
-    dropDowns: {
-      country: {
-        selected: false,
-        open: false,
-      },
-      type: {
-        selected: false,
-        open: false,
-      },
-    },
+    dropDowns: {},
   },
 };
 
@@ -33,16 +24,7 @@ const context = {
     data: MAIN_DATA,
   },
   front: {
-    dropDowns: {
-      country: {
-        selected: false,
-        open: false,
-      },
-      type: {
-        selected: false,
-        open: false,
-      },
-    },
+    dropDowns: {},
   },
 };
 
@@ -60,20 +42,13 @@ export const machine = createMachine(
         };
         front: {
           dropDowns: {
-            country: {
-              selected: boolean;
-              open: boolean;
-              current?: string;
-            };
-            type: {
-              selected: boolean;
-              open: boolean;
-              current?: string;
-            };
+            country?: string;
+            type?: string;
           };
         };
       },
       events: {} as
+        | { type: 'RESET_INPUTS' }
         | { type: 'TOGGLE_DROPDOWN_COUNTRY' }
         | { type: 'TOGGLE_DROPDOWN_TYPE' }
         | { type: 'FILTER_BY_COUNTRY'; country: string }
@@ -94,6 +69,11 @@ export const machine = createMachine(
 
       dropdowns: {
         type: 'parallel',
+        on: {
+          RESET_INPUTS: {
+            actions: ['resetInputs'],
+          },
+        },
         states: {
           country: {
             initial: 'idle',
@@ -101,9 +81,6 @@ export const machine = createMachine(
               idle: {
                 on: {
                   TOGGLE_DROPDOWN_COUNTRY: { target: 'filter' },
-                },
-                always: {
-                  target: 'filter',
                 },
               },
               filtering: {
@@ -139,18 +116,24 @@ export const machine = createMachine(
                   TOGGLE_DROPDOWN_TYPE: { target: 'filter' },
                 },
               },
+              filtering: {
+                always: {
+                  actions: ['filterByType'],
+                  target: 'busy',
+                },
+              },
               filter: {
                 on: {
                   TOGGLE_DROPDOWN_TYPE: { target: 'idle' },
                   FILTER_BY_TYPE: {
-                    actions: ['filterByType'],
-                    target: 'busy',
+                    actions: ['assignFilterType'],
+                    target: 'filtering',
                   },
                 },
               },
               busy: {
                 after: {
-                  200: 'filter',
+                  200: { target: 'filter' },
                 },
                 on: {
                   TOGGLE_DROPDOWN_TYPE: 'idle',
@@ -165,19 +148,28 @@ export const machine = createMachine(
   {
     actions: {
       assignFilterCountry: assign((context, { country }) => {
-        context.front.dropDowns.country.current = country;
+        context.front.dropDowns.country = country;
       }),
       filterByCountry: assign((context) => {
         context.back.filtered = context.back.data.filter(({ country }) => {
-          const currentCountry = context.front.dropDowns.country.current;
+          const currentCountry = context.front.dropDowns.country;
           const match = !!currentCountry && currentCountry === country;
           return match;
         });
       }),
-      filterByType: assign((context, { propertyType }) => {
-        context.back.filtered = (
-          context.back.filtered ?? context.back.data
-        ).filter((data) => data.type === propertyType);
+      assignFilterType: assign((context, { propertyType }) => {
+        context.front.dropDowns.type = propertyType;
+      }),
+      // removeSelectedCountry: assign((context) => {
+      //   context.front.dropDowns.country.current = undefined;
+      // }),
+      filterByType: assign((context) => {
+        context.back.filtered = context.back.data.filter(({ type }) => {
+          const currentPropertyType = context.front.dropDowns.type;
+          const match =
+            !!currentPropertyType && currentPropertyType === type;
+          return match;
+        });
       }),
       // filterByPrice: assign(
       //   (context, { inferiorOrEqualTo, superiorOrEqualTo }) => {

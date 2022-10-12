@@ -23,6 +23,8 @@ describe.concurrent('Working', () => {
 
     const service = interpret(machine).start();
 
+    service.send('TOGGLE_DROPDOWN_COUNTRY');
+
     service.send({
       type: 'FILTER_BY_COUNTRY',
       country,
@@ -40,6 +42,8 @@ describe.concurrent('Working', () => {
     const propertyType = 'Apartment';
 
     const service = interpret(machine).start();
+
+    service.send('TOGGLE_DROPDOWN_TYPE');
 
     service.send({
       type: 'FILTER_BY_TYPE',

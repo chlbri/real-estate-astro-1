@@ -1,7 +1,8 @@
 /** @jsxImportSource solid-js */
 
-import type { Component } from 'solid-js';
+import { Component } from 'solid-js';
 import {
+  dropdownCountryCanBeOpened,
   filterCountries,
   getCountries,
   getFilteredData,
@@ -15,7 +16,9 @@ export const DropdownCountry: Component<Props> = ({}) => {
   return (
     <div class='relative w-full lg:max-w-[296px] cursor-pointer px-2'>
       <button
-        onClick={toggleCountryDropdown}
+        onClick={() => {
+          toggleCountryDropdown();
+        }}
         class='w-full text-left flex h-[64px] items-center px-[18px] border rounded-lg'
       >
         <svg
@@ -32,13 +35,17 @@ export const DropdownCountry: Component<Props> = ({}) => {
           <div class='text-[13px]'>Select your place</div>
         </div>
       </button>
-      <ul class='px-6 py-8 text-[15px] space-y-6 shadow-md bg-white  w-full z-10 list-none rounded-b-lg'>
+      <ul
+        class='px-6 py-8 text-[15px] space-y-6 shadow-md bg-white  w-full z-10 list-none rounded-b-lg absolute opacity-0'
+        classList={{
+          'opacity-100': dropdownCountryCanBeOpened(),
+        }}
+      >
         {getCountries().map((country) => (
           <li
             class='cursor-pointer transition hover:text-violet-500'
             onclick={() => {
               filterCountries({ country });
-              console.log('filtered =>', getFilteredData());
             }}
             classList={{
               'text-violet-900': isCurrentCountry(country),

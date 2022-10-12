@@ -54,6 +54,8 @@ export function createInterpret<
     state.changed &&
       batch(() => {
         // diff data to only update values that changes
+        console.log('value =>', state.value);
+
         setStore('context', cloneDeep(state.context));
         setStore('matches', () => matchesD(state.value));
       });

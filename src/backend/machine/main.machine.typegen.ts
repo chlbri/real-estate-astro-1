@@ -14,15 +14,17 @@ export interface Typegen0 {
   };
   invokeSrcNameMap: {};
   missingImplementations: {
-    actions: never;
+    actions: "resetInputs";
     services: never;
     guards: never;
     delays: never;
   };
   eventsCausingActions: {
     assignFilterCountry: "FILTER_BY_COUNTRY";
+    assignFilterType: "FILTER_BY_TYPE";
     filterByCountry: "";
-    filterByType: "FILTER_BY_TYPE";
+    filterByType: "";
+    resetInputs: "RESET_INPUTS";
   };
   eventsCausingServices: {};
   eventsCausingGuards: {};
@@ -37,6 +39,7 @@ export interface Typegen0 {
     | "dropdowns.type"
     | "dropdowns.type.busy"
     | "dropdowns.type.filter"
+    | "dropdowns.type.filtering"
     | "dropdowns.type.idle"
     | "idle"
     | {
@@ -45,7 +48,7 @@ export interface Typegen0 {
           | "type"
           | {
               country?: "busy" | "filter" | "filtering" | "idle";
-              type?: "busy" | "filter" | "idle";
+              type?: "busy" | "filter" | "filtering" | "idle";
             };
       };
   tags: never;
