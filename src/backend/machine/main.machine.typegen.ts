@@ -3,6 +3,13 @@
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
+    "": { type: "" };
+    "xstate.after(200)#(machine).dropdowns.country.busy": {
+      type: "xstate.after(200)#(machine).dropdowns.country.busy";
+    };
+    "xstate.after(200)#(machine).dropdowns.type.busy": {
+      type: "xstate.after(200)#(machine).dropdowns.type.busy";
+    };
     "xstate.init": { type: "xstate.init" };
   };
   invokeSrcNameMap: {};
@@ -12,10 +19,34 @@ export interface Typegen0 {
     guards: never;
     delays: never;
   };
-  eventsCausingActions: {};
+  eventsCausingActions: {
+    assignFilterCountry: "FILTER_BY_COUNTRY";
+    filterByCountry: "";
+    filterByType: "FILTER_BY_TYPE";
+  };
   eventsCausingServices: {};
   eventsCausingGuards: {};
   eventsCausingDelays: {};
-  matchesStates: "idle";
+  matchesStates:
+    | "dropdowns"
+    | "dropdowns.country"
+    | "dropdowns.country.busy"
+    | "dropdowns.country.filter"
+    | "dropdowns.country.filtering"
+    | "dropdowns.country.idle"
+    | "dropdowns.type"
+    | "dropdowns.type.busy"
+    | "dropdowns.type.filter"
+    | "dropdowns.type.idle"
+    | "idle"
+    | {
+        dropdowns?:
+          | "country"
+          | "type"
+          | {
+              country?: "busy" | "filter" | "filtering" | "idle";
+              type?: "busy" | "filter" | "idle";
+            };
+      };
   tags: never;
 }

@@ -1,5 +1,6 @@
+import cloneDeep from 'lodash.clonedeep';
 import { Accessor, batch, createMemo, createRoot } from 'solid-js';
-import { createStore, reconcile } from 'solid-js/store';
+import { createStore } from 'solid-js/store';
 import {
   BaseActionObject,
   EventFrom,
@@ -13,8 +14,6 @@ import {
   Typestate,
 } from 'xstate';
 import { matches as matchesD } from './helpers/matches';
-
-
 
 export function createInterpret<
   TContext,
@@ -42,12 +41,12 @@ export function createInterpret<
     TResolvedTypesMeta
   >
 ) {
-  const service = interpret(machine).start();
+  const service = interpret(machine);
   const { context: _context, value } =
-    service.state ?? service.initialState;
+    service.getSnapshot() ?? service.initialState;
 
   const [store, setStore] = createStore({
-    context: _context,
+    context: cloneDeep(_context),
     matches: matchesD(value),
   });
 
@@ -55,7 +54,7 @@ export function createInterpret<
     state.changed &&
       batch(() => {
         // diff data to only update values that changes
-        setStore('context', reconcile(state.context));
+        setStore('context', cloneDeep(state.context));
         setStore('matches', () => matchesD(state.value));
       });
   });
@@ -91,12 +90,14 @@ export function createInterpret<
     };
   };
 
+  service.start();
+
   const output = {
     send: service.send,
+    sender,
     subscribe: service.subscribe.bind(service),
     matches: (value: string) => store.matches(value),
     context,
-    sender,
   } as const;
 
   return output;

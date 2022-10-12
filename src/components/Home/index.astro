@@ -2,7 +2,7 @@
 import MainLayout from '@-layouts/MainLayout.astro';
 import Spinner from './atoms/Spinner.astro';
 import Header from './molecules/Header.astro';
-import { Dropdown } from './organisms/Dropdown';
+import { DropdownCountry } from './organisms/DropdownCountry';
 ---
 
 <MainLayout title={'Home'}>
@@ -27,6 +27,6 @@ import { Dropdown } from './organisms/Dropdown';
       </svg>
     </button>
   </div>
-  <Dropdown />
+  <DropdownCountry client:load />
   <Spinner />
 </MainLayout>

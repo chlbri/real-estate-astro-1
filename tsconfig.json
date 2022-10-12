@@ -1,10 +1,12 @@
 {
   "extends": "astro/tsconfigs/strictest",
   "compilerOptions": {
+    "types": ["vitest/globals"],
     "baseUrl": ".",
     "paths": {
       "@-components/*": ["src/components/*"],
-      "@-layouts/*": ["src/layouts/*"]
+      "@-layouts/*": ["src/layouts/*"],
+      "@-utils/*": ["src/utils/*"]
     }
   }
 }
