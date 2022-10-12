@@ -1,6 +1,5 @@
 ---
 import MainLayout from '@-layouts/MainLayout.astro';
-import Spinner from './atoms/Spinner.astro';
 import Header from './molecules/Header.astro';
 import { DropdownCountry } from './organisms/DropdownCountry';
 ---
@@ -28,5 +27,4 @@ import { DropdownCountry } from './organisms/DropdownCountry';
     </button>
   </div>
   <DropdownCountry client:load />
-  <Spinner />
 </MainLayout>

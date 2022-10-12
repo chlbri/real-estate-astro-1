@@ -8,57 +8,56 @@ export const machine = createMachine(
     tsTypes: {} as import('./main.machine.typegen').Typegen0,
     schema: {
       context: {} as {
-        back: {
+        cache: {
           countries?: Set<string>;
           types?: Set<string>;
-          data: Property[];
-          filtered?: Property[];
         };
-        front: {
+
+        ui: {
           dropdowns: {
-            country: { current?: string; alreadyFiltered: boolean };
-            type: { current?: string; alreadyFiltered: boolean };
+            country?: string;
+            type?: string;
           };
           inputs: {
             price: {
               inferiorOrEqualTo?: number;
               superiorOrEqualTo?: number;
-              alreadyFiltered: boolean;
             };
+          };
+          data: {
+            filtered?: Property[];
           };
         };
       },
+
       events: {} as
+        | { type: 'RESET_INPUTS' }
         | { type: 'SET_PRICE_INFERIOR'; inferiorOrEqualTo: number }
         | { type: 'SET_PRICE_SUPERIOR'; superiorOrEqualTo: number }
         | { type: 'FOCUS_PRICE_INFERIOR' }
         | { type: 'FOCUS_PRICE_SUPERIOR' }
-        | { type: 'RESET_INPUTS' }
         | { type: 'TOGGLE_DROPDOWN_COUNTRY' }
         | { type: 'TOGGLE_DROPDOWN_TYPE' }
         | { type: 'FILTER_BY_COUNTRY'; country: string }
         | { type: 'FILTER_BY_TYPE'; propertyType: PropertyType },
-      services: {} as {},
+
+      services: {} as {
+        generateLists: {
+          data: { types?: Set<string>; countries?: Set<string> };
+        };
+
+        filterProperties: { data: Property[] };
+      },
     },
 
     context: {
-      back: {
-        data: MAIN_DATA,
-      },
-      front: {
-        dropdowns: {
-          country: {
-            alreadyFiltered: false,
-          },
-          type: {
-            alreadyFiltered: false,
-          },
-        },
+      cache: {},
+      ui: {
+        dropdowns: {},
         inputs: {
-          price: {
-            alreadyFiltered: false,
-          },
+          price: {},
         },
+        data: {},
       },
     },
 
@@ -66,11 +65,19 @@ export const machine = createMachine(
     states: {
       idle: {
         always: {
-          actions: ['generation'],
-          target: 'ui',
+          target: 'starting',
         },
       },
-      ui: {
+      starting: {
+        invoke: {
+          src: 'generateLists',
+          onDone: {
+            target: 'working',
+            actions: ['generateLists'],
+          },
+        },
+      },
+      working: {
         type: 'parallel',
         on: {
           RESET_INPUTS: {
@@ -94,29 +101,22 @@ export const machine = createMachine(
                       TOGGLE_DROPDOWN_COUNTRY: { target: 'idle' },
                       FILTER_BY_COUNTRY: {
                         actions: ['assignFilterCountry'],
-                        target: 'checkFiltering',
+                        target: 'filtering',
                       },
                     },
                   },
-                  checkFiltering: {
-                    always: [
-                      {
-                        cond: 'isAlreadyFilteredByCountry',
-                        actions: ['resetFilteredCountry'],
-                        target: 'filtering',
-                      },
-                      'filtering',
-                    ],
-                  },
                   filtering: {
-                    always: {
-                      actions: ['filterByCountry'],
-                      target: 'busy',
+                    invoke: {
+                      src: 'filterProperties',
+                      onDone: {
+                        actions: ['filter'],
+                        target: 'busy',
+                      },
                     },
                   },
                   busy: {
                     after: {
-                      200: { target: 'idle' },
+                      TIME_BETWEEN_REQUESTS: { target: 'idle' },
                     },
                   },
                 },
@@ -134,29 +134,22 @@ export const machine = createMachine(
                       TOGGLE_DROPDOWN_TYPE: { target: 'idle' },
                       FILTER_BY_TYPE: {
                         actions: ['assignFilterType'],
-                        target: 'checkFiltering',
+                        target: 'filtering',
                       },
                     },
                   },
-                  checkFiltering: {
-                    always: [
-                      {
-                        cond: 'isAlreadyFilteredByType',
-                        actions: ['resetFilteredType'],
-                        target: 'filtering',
-                      },
-                      'filtering',
-                    ],
-                  },
                   filtering: {
-                    always: {
-                      actions: ['filterByType'],
-                      target: 'busy',
+                    invoke: {
+                      src: 'filterProperties',
+                      onDone: {
+                        actions: ['filter'],
+                        target: 'busy',
+                      },
                     },
                   },
                   busy: {
                     after: {
-                      200: { target: 'idle' },
+                      TIME_BETWEEN_REQUESTS: { target: 'idle' },
                     },
                   },
                 },
@@ -188,14 +181,9 @@ export const machine = createMachine(
 
                         states: {
                           focus: {
-                            always: {
-                              target: 'filter',
-                            },
-                          },
-                          filter: {
                             on: {
                               SET_PRICE_INFERIOR: {
-                                target: 'checkPreviousFilter',
+                                target: 'filter',
                                 actions: ['setPriceInferior'],
                               },
                               FOCUS_PRICE_SUPERIOR: {
@@ -203,29 +191,27 @@ export const machine = createMachine(
                               },
                             },
                           },
-                          checkPreviousFilter: {
-                            always: [
-                              {
-                                cond: 'isAlreadyFilteredByPrice',
-                                actions: ['resetFilteredPrice'],
-                                target: 'filtering',
-                              },
-                              'filtering',
-                            ],
-                          },
-                          filtering: {
+                          filter: {
                             always: [
                               {
                                 cond: 'inferiorAndSuperiorAreSet',
-                                actions: ['filterByPrice'],
-                                target: 'busy',
+                                target: 'filtering',
                               },
                               '#superiorTo',
                             ],
                           },
+                          filtering: {
+                            invoke: {
+                              src: 'filterProperties',
+                              onDone: {
+                                actions: ['filter'],
+                                target: 'busy',
+                              },
+                            },
+                          },
                           busy: {
                             after: {
-                              200: '#price_idle',
+                              TIME_BETWEEN_REQUESTS: '#price_idle',
                             },
                           },
                         },
@@ -235,14 +221,9 @@ export const machine = createMachine(
                         initial: 'focus',
                         states: {
                           focus: {
-                            always: {
-                              target: 'filter',
-                            },
-                          },
-                          filter: {
                             on: {
                               SET_PRICE_SUPERIOR: {
-                                target: 'checkPreviousFilter',
+                                target: 'filter',
                                 actions: ['setPriceSuperior'],
                               },
                               FOCUS_PRICE_INFERIOR: {
@@ -250,29 +231,27 @@ export const machine = createMachine(
                               },
                             },
                           },
-                          checkPreviousFilter: {
-                            always: [
-                              {
-                                cond: 'isAlreadyFilteredByPrice',
-                                actions: ['resetFilteredPrice'],
-                                target: 'filtering',
-                              },
-                              'filtering',
-                            ],
-                          },
-                          filtering: {
+                          filter: {
                             always: [
                               {
                                 cond: 'inferiorAndSuperiorAreSet',
-                                actions: ['filterByPrice'],
-                                target: 'busy',
+                                target: 'filtering',
                               },
                               '#inferiorTo',
                             ],
                           },
+                          filtering: {
+                            invoke: {
+                              src: 'filterProperties',
+                              onDone: {
+                                actions: ['filter'],
+                                target: 'busy',
+                              },
+                            },
+                          },
                           busy: {
                             after: {
-                              200: '#price_idle',
+                              TIME_BETWEEN_REQUESTS: '#price_idle',
                             },
                           },
                         },
@@ -289,155 +268,84 @@ export const machine = createMachine(
   },
   {
     actions: {
-      generation: assign((context) => {
-        context.back.countries = new Set(
-          context.back.data.map((data) => data.country)
-        );
-        context.back.types = new Set(
-          context.back.data.map((data) => data.type)
-        );
+      generateLists: assign((context, { data }) => {
+        context.cache.countries = data.countries;
+        context.cache.types = data.types;
       }),
 
       resetInputs: assign((context) => {
-        context.front.dropdowns.country = { alreadyFiltered: false };
-        context.front.dropdowns.type = { alreadyFiltered: false };
-        context.front.inputs.price = { alreadyFiltered: false };
+        context.ui.dropdowns.country = undefined;
+        context.ui.dropdowns.type = undefined;
+        context.ui.inputs.price = {};
       }),
 
-      // #region Country
       assignFilterCountry: assign((context, { country }) => {
-        context.front.dropdowns.country = {
-          current: country,
-          alreadyFiltered: true,
-        };
+        context.ui.dropdowns.country = country;
       }),
 
-      filterByCountry: assign((context) => {
-        context.back.filtered = (
-          context.back.filtered ?? context.back.data
-        ).filter(({ country }) => {
-          const currentCountry = context.front.dropdowns.country.current;
-          const match = !!currentCountry && currentCountry === country;
-          return match;
-        });
-        context.front.dropdowns.country.alreadyFiltered = true;
-      }),
-
-      resetFilteredCountry: assign((context) => {
-        context.front.dropdowns.country.alreadyFiltered = false;
-        const currentType = context.front.dropdowns.type.current;
-        const inferiorOrEqualTo =
-          context.front.inputs.price.inferiorOrEqualTo;
-        const superiorOrEqualTo =
-          context.front.inputs.price.superiorOrEqualTo;
-        context.back.filtered = context.back.data.filter(
-          ({ type, price }) =>
-            (!currentType || type === currentType) &&
-            (!inferiorOrEqualTo || price <= inferiorOrEqualTo) &&
-            (!superiorOrEqualTo || price >= superiorOrEqualTo)
-        );
-      }),
-      // #endregion
-
-      // #region PropertyType
       assignFilterType: assign((context, { propertyType }) => {
-        context.front.dropdowns.type = {
-          current: propertyType,
-          alreadyFiltered: true,
-        };
+        context.ui.dropdowns.type = propertyType;
       }),
-
-      filterByType: assign((context) => {
-        context.back.filtered = (
-          context.back.filtered ?? context.back.data
-        ).filter(({ type }) => {
-          const currentPropertyType = context.front.dropdowns.type.current;
-          const match =
-            !!currentPropertyType && currentPropertyType === type;
-          return match;
-        });
-        context.front.dropdowns.type.alreadyFiltered = true;
-      }),
-
-      resetFilteredType: assign((context) => {
-        context.front.dropdowns.type.alreadyFiltered = false;
-        const currentCountry = context.front.dropdowns.country.current;
-        const inferiorOrEqualTo =
-          context.front.inputs.price.inferiorOrEqualTo;
-        const superiorOrEqualTo =
-          context.front.inputs.price.superiorOrEqualTo;
-        context.back.filtered = context.back.data.filter(
-          ({ country, price }) =>
-            (!currentCountry || country === currentCountry) &&
-            (!inferiorOrEqualTo || price <= inferiorOrEqualTo) &&
-            (!superiorOrEqualTo || price >= superiorOrEqualTo)
-        );
-      }),
-      // #endregion
 
       // #region Price
       setPriceInferior: assign((context, { inferiorOrEqualTo }) => {
-        context.front.inputs.price.inferiorOrEqualTo = inferiorOrEqualTo;
+        context.ui.inputs.price.inferiorOrEqualTo = inferiorOrEqualTo;
       }),
 
       setPriceSuperior: assign((context, { superiorOrEqualTo }) => {
-        context.front.inputs.price.superiorOrEqualTo = superiorOrEqualTo;
-      }),
-
-      filterByPrice: assign((context) => {
-        // #region Variables
-        const inferiorOrEqualTo =
-          context.front.inputs.price.inferiorOrEqualTo!;
-        const superiorOrEqualTo =
-          context.front.inputs.price.superiorOrEqualTo!;
-        // #endregion
-
-        context.back.filtered = (
-          context.back.filtered ?? context.back.data
-        ).filter(
-          ({ price }) =>
-            price >= superiorOrEqualTo && price <= inferiorOrEqualTo
-        );
-        context.front.inputs.price.alreadyFiltered = true;
-      }),
-
-      resetFilteredPrice: assign((context) => {
-        context.front.inputs.price.alreadyFiltered = false;
-        const currentCountry = context.front.dropdowns.country.current;
-        const currentType = context.front.dropdowns.type.current;
-        context.back.filtered = context.back.data.filter(
-          ({ country, type }) =>
-            (!currentType || type === currentType) &&
-            (!currentCountry || country === currentCountry)
-        );
+        context.ui.inputs.price.superiorOrEqualTo = superiorOrEqualTo;
       }),
       // #endregion
+
+      filter: assign((context, { data }) => {
+        context.ui.data.filtered = data;
+      }),
     },
+
     guards: {
-      // #region Price
       inferiorAndSuperiorAreSet: (context) => {
         // #region Variables
         const inferiorOrEqualTo =
-          context.front.inputs.price.inferiorOrEqualTo;
+          context.ui.inputs.price.inferiorOrEqualTo;
         const superiorOrEqualTo =
-          context.front.inputs.price.superiorOrEqualTo;
+          context.ui.inputs.price.superiorOrEqualTo;
         // #endregion
 
         return !!inferiorOrEqualTo && !!superiorOrEqualTo;
       },
+    },
 
-      isAlreadyFilteredByPrice: (context) => {
-        return context.front.inputs.price.alreadyFiltered;
-      },
-      // #endregion
-
-      isAlreadyFilteredByCountry: (context) => {
-        return context.front.dropdowns.country.alreadyFiltered;
+    services: {
+      generateLists: async () => {
+        const types = new Set(MAIN_DATA.map((data) => data.type));
+        const countries = new Set(MAIN_DATA.map((data) => data.country));
+        return { types, countries };
       },
 
-      isAlreadyFilteredByType: (context) => {
-        return context.front.dropdowns.type.alreadyFiltered;
+      filterProperties: async (context) => {
+        // #region Variables
+        const currentCountry = context.ui.dropdowns.country;
+        const currentType = context.ui.dropdowns.type;
+        const inferiorOrEqualTo =
+          context.ui.inputs.price.inferiorOrEqualTo;
+        const superiorOrEqualTo =
+          context.ui.inputs.price.superiorOrEqualTo;
+        // #endregion
+
+        const out = MAIN_DATA.filter(
+          ({ country, type, price }) =>
+            (!currentCountry || country === currentCountry) &&
+            (!currentType || type === currentType) &&
+            (!inferiorOrEqualTo || price <= inferiorOrEqualTo) &&
+            (!superiorOrEqualTo || price >= superiorOrEqualTo)
+        );
+
+        return out;
       },
+    },
+
+    delays: {
+      TIME_BETWEEN_REQUESTS: 200,
     },
   }
 );

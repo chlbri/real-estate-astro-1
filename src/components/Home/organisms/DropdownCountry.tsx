@@ -1,14 +1,17 @@
 /** @jsxImportSource solid-js */
 
-import { Component } from 'solid-js';
+import type { Component } from 'solid-js';
 import {
   dropdownCountryCanBeOpened,
+  dropdownCountryIsBusy,
+  dropdownCountryIsNotBusy,
   filterCountries,
   getCountries,
   getFilteredData,
   isCurrentCountry,
   toggleCountryDropdown,
-} from 'src/hooks/main.service';
+} from 'src/hooks/usecases';
+import { Spinner } from '../atoms/Spinner';
 
 type Props = {};
 
@@ -55,7 +58,13 @@ export const DropdownCountry: Component<Props> = ({}) => {
           </li>
         ))}
       </ul>
-      {JSON.stringify(getFilteredData()?.map((data) => data.country))}
+      <div>
+        {dropdownCountryIsBusy() && (
+          <Spinner size={230} class='absolute' />
+        )}
+        {dropdownCountryIsNotBusy() &&
+          JSON.stringify(getFilteredData()?.map((data) => data.country))}
+      </div>
     </div>
   );
 };

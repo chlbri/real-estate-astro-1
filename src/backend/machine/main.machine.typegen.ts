@@ -4,21 +4,53 @@ export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
     "": { type: "" };
-    "xstate.after(200)#(machine).ui.dropdowns.country.busy": {
-      type: "xstate.after(200)#(machine).ui.dropdowns.country.busy";
+    "done.invoke.(machine).starting:invocation[0]": {
+      type: "done.invoke.(machine).starting:invocation[0]";
+      data: unknown;
+      __tip: "See the XState TS docs to learn how to strongly type this.";
     };
-    "xstate.after(200)#(machine).ui.dropdowns.type.busy": {
-      type: "xstate.after(200)#(machine).ui.dropdowns.type.busy";
+    "done.invoke.(machine).working.dropdowns.country.filtering:invocation[0]": {
+      type: "done.invoke.(machine).working.dropdowns.country.filtering:invocation[0]";
+      data: unknown;
+      __tip: "See the XState TS docs to learn how to strongly type this.";
     };
-    "xstate.after(200)#(machine).ui.inputs.price.focus.inferiorTo.busy": {
-      type: "xstate.after(200)#(machine).ui.inputs.price.focus.inferiorTo.busy";
+    "done.invoke.(machine).working.dropdowns.type.filtering:invocation[0]": {
+      type: "done.invoke.(machine).working.dropdowns.type.filtering:invocation[0]";
+      data: unknown;
+      __tip: "See the XState TS docs to learn how to strongly type this.";
     };
-    "xstate.after(200)#(machine).ui.inputs.price.focus.superiorTo.busy": {
-      type: "xstate.after(200)#(machine).ui.inputs.price.focus.superiorTo.busy";
+    "done.invoke.(machine).working.inputs.price.focus.inferiorTo.filtering:invocation[0]": {
+      type: "done.invoke.(machine).working.inputs.price.focus.inferiorTo.filtering:invocation[0]";
+      data: unknown;
+      __tip: "See the XState TS docs to learn how to strongly type this.";
+    };
+    "done.invoke.(machine).working.inputs.price.focus.superiorTo.filtering:invocation[0]": {
+      type: "done.invoke.(machine).working.inputs.price.focus.superiorTo.filtering:invocation[0]";
+      data: unknown;
+      __tip: "See the XState TS docs to learn how to strongly type this.";
+    };
+    "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).working.dropdowns.country.busy": {
+      type: "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).working.dropdowns.country.busy";
+    };
+    "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).working.dropdowns.type.busy": {
+      type: "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).working.dropdowns.type.busy";
+    };
+    "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).working.inputs.price.focus.inferiorTo.busy": {
+      type: "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).working.inputs.price.focus.inferiorTo.busy";
+    };
+    "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).working.inputs.price.focus.superiorTo.busy": {
+      type: "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).working.inputs.price.focus.superiorTo.busy";
     };
     "xstate.init": { type: "xstate.init" };
   };
-  invokeSrcNameMap: {};
+  invokeSrcNameMap: {
+    filterProperties:
+      | "done.invoke.(machine).working.dropdowns.country.filtering:invocation[0]"
+      | "done.invoke.(machine).working.dropdowns.type.filtering:invocation[0]"
+      | "done.invoke.(machine).working.inputs.price.focus.inferiorTo.filtering:invocation[0]"
+      | "done.invoke.(machine).working.inputs.price.focus.superiorTo.filtering:invocation[0]";
+    generateLists: "done.invoke.(machine).starting:invocation[0]";
+  };
   missingImplementations: {
     actions: never;
     services: never;
@@ -28,59 +60,61 @@ export interface Typegen0 {
   eventsCausingActions: {
     assignFilterCountry: "FILTER_BY_COUNTRY";
     assignFilterType: "FILTER_BY_TYPE";
-    filterByCountry: "";
-    filterByPrice: "";
-    filterByType: "";
-    generation: "";
-    resetFilteredCountry: "";
-    resetFilteredPrice: "";
-    resetFilteredType: "";
+    filter:
+      | "done.invoke.(machine).working.dropdowns.country.filtering:invocation[0]"
+      | "done.invoke.(machine).working.dropdowns.type.filtering:invocation[0]"
+      | "done.invoke.(machine).working.inputs.price.focus.inferiorTo.filtering:invocation[0]"
+      | "done.invoke.(machine).working.inputs.price.focus.superiorTo.filtering:invocation[0]";
+    generateLists: "done.invoke.(machine).starting:invocation[0]";
     resetInputs: "RESET_INPUTS";
     setPriceInferior: "SET_PRICE_INFERIOR";
     setPriceSuperior: "SET_PRICE_SUPERIOR";
   };
-  eventsCausingServices: {};
+  eventsCausingServices: {
+    filterProperties: "" | "FILTER_BY_COUNTRY" | "FILTER_BY_TYPE";
+    generateLists: "";
+  };
   eventsCausingGuards: {
     inferiorAndSuperiorAreSet: "";
-    isAlreadyFilteredByCountry: "";
-    isAlreadyFilteredByPrice: "";
-    isAlreadyFilteredByType: "";
   };
-  eventsCausingDelays: {};
+  eventsCausingDelays: {
+    TIME_BETWEEN_REQUESTS:
+      | "done.invoke.(machine).working.dropdowns.country.filtering:invocation[0]"
+      | "done.invoke.(machine).working.dropdowns.type.filtering:invocation[0]"
+      | "done.invoke.(machine).working.inputs.price.focus.inferiorTo.filtering:invocation[0]"
+      | "done.invoke.(machine).working.inputs.price.focus.superiorTo.filtering:invocation[0]";
+  };
   matchesStates:
     | "idle"
-    | "ui"
-    | "ui.dropdowns"
-    | "ui.dropdowns.country"
-    | "ui.dropdowns.country.busy"
-    | "ui.dropdowns.country.checkFiltering"
-    | "ui.dropdowns.country.filter"
-    | "ui.dropdowns.country.filtering"
-    | "ui.dropdowns.country.idle"
-    | "ui.dropdowns.type"
-    | "ui.dropdowns.type.busy"
-    | "ui.dropdowns.type.checkFiltering"
-    | "ui.dropdowns.type.filter"
-    | "ui.dropdowns.type.filtering"
-    | "ui.dropdowns.type.idle"
-    | "ui.inputs"
-    | "ui.inputs.price"
-    | "ui.inputs.price.focus"
-    | "ui.inputs.price.focus.inferiorTo"
-    | "ui.inputs.price.focus.inferiorTo.busy"
-    | "ui.inputs.price.focus.inferiorTo.checkPreviousFilter"
-    | "ui.inputs.price.focus.inferiorTo.filter"
-    | "ui.inputs.price.focus.inferiorTo.filtering"
-    | "ui.inputs.price.focus.inferiorTo.focus"
-    | "ui.inputs.price.focus.superiorTo"
-    | "ui.inputs.price.focus.superiorTo.busy"
-    | "ui.inputs.price.focus.superiorTo.checkPreviousFilter"
-    | "ui.inputs.price.focus.superiorTo.filter"
-    | "ui.inputs.price.focus.superiorTo.filtering"
-    | "ui.inputs.price.focus.superiorTo.focus"
-    | "ui.inputs.price.idle"
+    | "starting"
+    | "working"
+    | "working.dropdowns"
+    | "working.dropdowns.country"
+    | "working.dropdowns.country.busy"
+    | "working.dropdowns.country.filter"
+    | "working.dropdowns.country.filtering"
+    | "working.dropdowns.country.idle"
+    | "working.dropdowns.type"
+    | "working.dropdowns.type.busy"
+    | "working.dropdowns.type.filter"
+    | "working.dropdowns.type.filtering"
+    | "working.dropdowns.type.idle"
+    | "working.inputs"
+    | "working.inputs.price"
+    | "working.inputs.price.focus"
+    | "working.inputs.price.focus.inferiorTo"
+    | "working.inputs.price.focus.inferiorTo.busy"
+    | "working.inputs.price.focus.inferiorTo.filter"
+    | "working.inputs.price.focus.inferiorTo.filtering"
+    | "working.inputs.price.focus.inferiorTo.focus"
+    | "working.inputs.price.focus.superiorTo"
+    | "working.inputs.price.focus.superiorTo.busy"
+    | "working.inputs.price.focus.superiorTo.filter"
+    | "working.inputs.price.focus.superiorTo.filtering"
+    | "working.inputs.price.focus.superiorTo.focus"
+    | "working.inputs.price.idle"
     | {
-        ui?:
+        working?:
           | "dropdowns"
           | "inputs"
           | {
@@ -88,18 +122,8 @@ export interface Typegen0 {
                 | "country"
                 | "type"
                 | {
-                    country?:
-                      | "busy"
-                      | "checkFiltering"
-                      | "filter"
-                      | "filtering"
-                      | "idle";
-                    type?:
-                      | "busy"
-                      | "checkFiltering"
-                      | "filter"
-                      | "filtering"
-                      | "idle";
+                    country?: "busy" | "filter" | "filtering" | "idle";
+                    type?: "busy" | "filter" | "filtering" | "idle";
                   };
               inputs?:
                 | "price"
@@ -114,13 +138,11 @@ export interface Typegen0 {
                             | {
                                 inferiorTo?:
                                   | "busy"
-                                  | "checkPreviousFilter"
                                   | "filter"
                                   | "filtering"
                                   | "focus";
                                 superiorTo?:
                                   | "busy"
-                                  | "checkPreviousFilter"
                                   | "filter"
                                   | "filtering"
                                   | "focus";

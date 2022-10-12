@@ -1,6 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
 import { Accessor, batch, createMemo, createRoot } from 'solid-js';
-import { createStore } from 'solid-js/store';
+import { createStore, reconcile } from 'solid-js/store';
 import {
   BaseActionObject,
   EventFrom,
@@ -54,9 +54,7 @@ export function createInterpret<
     state.changed &&
       batch(() => {
         // diff data to only update values that changes
-        console.log('value =>', state.value);
-
-        setStore('context', cloneDeep(state.context));
+        setStore('context', reconcile(cloneDeep(state.context)));
         setStore('matches', () => matchesD(state.value));
       });
   });

@@ -5,13 +5,13 @@ export const { sender, context, matches } = createInterpret(machine);
 
 export const getCountries = context({
   accessor: (context) => {
-    const countries = context.back.countries ?? [];
+    const countries = context.cache.countries ?? [];
     return Array.from(countries);
   },
 });
 
 export const getCurrentCountry = context({
-  accessor: (context) => context.front.dropdowns.country.current,
+  accessor: (context) => context.ui.dropdowns.country,
 });
 
 export function isCurrentCountry(country: string) {
@@ -19,7 +19,7 @@ export function isCurrentCountry(country: string) {
 }
 
 export const getCurrentType = context({
-  accessor: (context) => context.front.dropdowns.type.current,
+  accessor: (context) => context.ui.dropdowns.type,
 });
 
 export function isCurrentType(type: string) {
@@ -28,14 +28,26 @@ export function isCurrentType(type: string) {
 
 export function dropdownCountryCanBeOpened() {
   return (
-    matches('ui.dropdowns.country') &&
-    !matches('ui.dropdowns.country.idle')
+    matches('working.dropdowns.country') &&
+    !matches('working.dropdowns.country.idle')
   );
+}
+
+export function dropdownCountryIsBusy() {
+  return (
+    matches('working.dropdowns.country.filtering') ||
+    matches('working.dropdowns.country.busy')
+  );
+}
+
+export function dropdownCountryIsNotBusy() {
+  return matches('working.dropdowns.country.idle');
 }
 
 export function dropdownTypeCanBeOpened() {
   return (
-    matches('ui.dropdowns.type') && !matches('ui.dropdowns.type.idle')
+    matches('working.dropdowns.type') &&
+    matches('working.dropdowns.type.idle')
   );
 }
 
@@ -44,9 +56,5 @@ export const filterCountries = sender('FILTER_BY_COUNTRY');
 export const toggleCountryDropdown = sender('TOGGLE_DROPDOWN_COUNTRY');
 
 export const getFilteredData = context({
-  accessor: (context) => context.back.filtered,
-});
-
-export const getAll = context({
-  accessor: (context) => context.back.data,
+  accessor: (context) => context.ui.data.filtered,
 });

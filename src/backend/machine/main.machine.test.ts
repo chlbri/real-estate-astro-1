@@ -17,6 +17,8 @@ describe.concurrent('Working', () => {
   test.concurrent('It will filter by country', async () => {
     const country = 'United States';
     const service = interpret(machine).start();
+    vi.useFakeTimers();
+    await advanceByTime(0);
 
     service.send('TOGGLE_DROPDOWN_COUNTRY');
     service.send({
@@ -24,7 +26,9 @@ describe.concurrent('Working', () => {
       country,
     });
 
-    const actual = service.getSnapshot().context.back.filtered;
+    await advanceByTime(0);
+
+    const actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toBeDefined();
     expect(actual).toEqual(
       MAIN_DATA.filter((data) => data.country === country)
@@ -35,8 +39,8 @@ describe.concurrent('Working', () => {
     const country1 = 'United States';
     const country2 = 'Canada';
     const service = interpret(machine).start();
-
     vi.useFakeTimers();
+    await advanceByTime(0);
 
     service.send('TOGGLE_DROPDOWN_COUNTRY');
     service.send({
@@ -44,7 +48,9 @@ describe.concurrent('Working', () => {
       country: country1,
     });
 
-    let actual = service.getSnapshot().context.back.filtered;
+    await advanceByTime(0);
+
+    let actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toEqual(
       MAIN_DATA.filter((data) => data.country === country1)
     );
@@ -57,7 +63,9 @@ describe.concurrent('Working', () => {
       country: country2,
     });
 
-    actual = service.getSnapshot().context.back.filtered;
+    await advanceByTime(0);
+
+    actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toEqual(
       MAIN_DATA.filter((data) => data.country === country2)
     );
@@ -66,6 +74,8 @@ describe.concurrent('Working', () => {
   test.concurrent('It will filter by type', async () => {
     const propertyType = 'Apartment';
     const service = interpret(machine).start();
+    vi.useFakeTimers();
+    await advanceByTime(0);
 
     service.send('TOGGLE_DROPDOWN_TYPE');
     service.send({
@@ -73,7 +83,9 @@ describe.concurrent('Working', () => {
       propertyType,
     });
 
-    const actual = service.getSnapshot().context.back.filtered;
+    await advanceByTime(0);
+
+    const actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toEqual(
       MAIN_DATA.filter((data) => data.type === propertyType)
     );
@@ -83,8 +95,8 @@ describe.concurrent('Working', () => {
     const propertyType1 = 'Apartment';
     const propertyType2 = 'House';
     const service = interpret(machine).start();
-
     vi.useFakeTimers();
+    await advanceByTime(0);
 
     service.send('TOGGLE_DROPDOWN_TYPE');
     service.send({
@@ -92,7 +104,9 @@ describe.concurrent('Working', () => {
       propertyType: propertyType1,
     });
 
-    let actual = service.getSnapshot().context.back.filtered;
+    await advanceByTime(0);
+
+    let actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toEqual(
       MAIN_DATA.filter((data) => data.type === propertyType1)
     );
@@ -105,7 +119,9 @@ describe.concurrent('Working', () => {
       propertyType: propertyType2,
     });
 
-    actual = service.getSnapshot().context.back.filtered;
+    await advanceByTime(0);
+
+    actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toEqual(
       MAIN_DATA.filter((data) => data.type === propertyType2)
     );
@@ -115,12 +131,15 @@ describe.concurrent('Working', () => {
     const inferiorOrEqualTo = 200_000;
     const superiorOrEqualTo = 100_000;
     const service = interpret(machine).start();
+    await advanceByTime(0);
 
     service.send('FOCUS_PRICE_INFERIOR');
     service.send({ type: 'SET_PRICE_INFERIOR', inferiorOrEqualTo });
     service.send({ type: 'SET_PRICE_SUPERIOR', superiorOrEqualTo });
 
-    const actual = service.getSnapshot().context.back.filtered;
+    await advanceByTime(0);
+
+    const actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toEqual(
       MAIN_DATA.filter(
         ({ price }) =>
@@ -137,8 +156,8 @@ describe.concurrent('Working', () => {
       const inferiorOrEqualTo2 = 100_000;
       const superiorOrEqualTo2 = 30_000;
       const service = interpret(machine).start();
-
       vi.useFakeTimers();
+      await advanceByTime(0);
 
       service.send('FOCUS_PRICE_INFERIOR');
       service.send({
@@ -150,7 +169,9 @@ describe.concurrent('Working', () => {
         superiorOrEqualTo: superiorOrEqualTo1,
       });
 
-      let actual = service.getSnapshot().context.back.filtered;
+      await advanceByTime(0);
+
+      let actual = service.getSnapshot().context.ui.data.filtered;
       expect(actual).toEqual(
         MAIN_DATA.filter(
           ({ price }) =>
@@ -166,7 +187,9 @@ describe.concurrent('Working', () => {
         inferiorOrEqualTo: inferiorOrEqualTo2,
       });
 
-      actual = service.getSnapshot().context.back.filtered;
+      await advanceByTime(0);
+
+      actual = service.getSnapshot().context.ui.data.filtered;
       expect(actual).toEqual(
         MAIN_DATA.filter(
           ({ price }) =>
@@ -182,7 +205,9 @@ describe.concurrent('Working', () => {
         superiorOrEqualTo: superiorOrEqualTo2,
       });
 
-      actual = service.getSnapshot().context.back.filtered;
+      await advanceByTime(0);
+
+      actual = service.getSnapshot().context.ui.data.filtered;
       expect(actual).toEqual(
         MAIN_DATA.filter(
           ({ price }) =>
@@ -226,7 +251,9 @@ describe.concurrent('Working', () => {
     });
     // #endregion
 
-    const actual = service.getSnapshot().context.back.filtered;
+    await advanceByTime(0);
+
+    const actual = service.getSnapshot().context.ui.data.filtered;
 
     const expected = MAIN_DATA.filter(({ price }) => {
       return price >= superiorOrEqualTo && price <= inferiorOrEqualTo;
@@ -248,8 +275,9 @@ describe.concurrent('Working', () => {
       const superiorOrEqualTo = 20_000;
       const country = 'United States';
       const propertyType = 'Apartment';
-
       const service = interpret(machine).start();
+      vi.useFakeTimers();
+      await advanceByTime(0);
 
       // #region Senders
       service.send('FOCUS_PRICE_INFERIOR');
@@ -267,7 +295,9 @@ describe.concurrent('Working', () => {
       });
       // #endregion
 
-      const actual = service.getSnapshot().context.back.filtered;
+      await advanceByTime(0);
+
+      const actual = service.getSnapshot().context.ui.data.filtered;
       const expected = MAIN_DATA.filter(({ price }) => {
         return price >= superiorOrEqualTo && price <= inferiorOrEqualTo;
       });
