@@ -2,6 +2,7 @@
 
 import type { Component } from 'solid-js';
 import type { Property as P } from 'src/backend/data/main';
+import { removePublic } from 'src/backend/data/removePublic';
 import { AreaIcon } from '../atoms/icons/AreaIcon';
 import { BathIcon } from '../atoms/icons/BathIcon';
 import { BedIcon } from '../atoms/icons/BedIcon';
@@ -13,7 +14,7 @@ type Props = {
 export const Property: Component<Props> = ({ property }) => {
   return (
     <div class='bg-white shadow-1 p-5 rounded-lg rounded-tl-[90px] w-full max-w-[352px] mx-auto cursor-pointer hover:shadow-2xl transition'>
-      <img class='mb-8' src={property.image} alt='' />
+      <img class='mb-8' src={removePublic(property.image)} alt='' />
       <div class='mb-4 flex gap-x-2 text-sm'>
         <div class='bg-green-500 rounded-full text-white px-3 inline-block'>
           {property.type}
