@@ -1,6 +1,17 @@
 import { assign } from '@xstate/immer';
-import { createMachine, EventFrom, StateFrom } from 'xstate';
+import { createMachine, EventFrom, StateFrom, StateMachine } from 'xstate';
 import { MAIN_DATA, Property, PropertyType } from '../data/main';
+
+// export const intialContext = {
+//   cache: {},
+//   ui: {
+//     dropdowns: {},
+//     inputs: {
+//       price: {},
+//     },
+//     data: {},
+//   },
+// };
 
 export const machine = createMachine(
   {
@@ -31,6 +42,7 @@ export const machine = createMachine(
       },
 
       events: {} as
+        | { type: '__RESET__' }
         | { type: 'RESET_INPUTS' }
         | { type: 'SET_PRICE_INFERIOR'; inferiorOrEqualTo: number }
         | { type: 'SET_PRICE_SUPERIOR'; superiorOrEqualTo: number }
@@ -58,6 +70,12 @@ export const machine = createMachine(
           price: {},
         },
         data: {},
+      },
+    },
+    on: {
+      __RESET__: {
+        actions: ['resetCache', 'resetInputs'],
+        target: 'idle',
       },
     },
 
@@ -268,6 +286,10 @@ export const machine = createMachine(
   },
   {
     actions: {
+      resetCache: assign((context) => {
+        context.cache = {};
+      }),
+
       generateLists: assign((context, { data }) => {
         context.cache.countries = data.countries;
         context.cache.types = data.types;
@@ -353,3 +375,16 @@ export const machine = createMachine(
 export type MainMachine = typeof machine;
 export type EventMachine = EventFrom<MainMachine>;
 export type State = StateFrom<MainMachine>;
+export type ContextFrom<T extends any> = T extends StateMachine<
+  infer U,
+  any,
+  any,
+  any,
+  any,
+  any,
+  any
+>
+  ? U
+  : never;
+
+  export type Context = ContextFrom<MainMachine>

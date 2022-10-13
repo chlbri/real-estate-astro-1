@@ -14,11 +14,24 @@ describe.concurrent('Acceptation', () => {
 });
 
 describe.concurrent('Working', () => {
+  const service = interpret(machine);
+
+  beforeAll(() => {
+    vi.useFakeTimers();
+    service.start();
+  });
+
+  afterAll(() => {
+    vi.useRealTimers();
+  });
+
+  beforeEach(async () => {
+    service.send('__RESET__');
+    await advanceByTime(0);
+  });
+
   test.concurrent('It will filter by country', async () => {
     const country = 'United States';
-    const service = interpret(machine).start();
-    vi.useFakeTimers();
-    await advanceByTime(0);
 
     service.send('TOGGLE_DROPDOWN_COUNTRY');
     service.send({
@@ -38,9 +51,6 @@ describe.concurrent('Working', () => {
   test.concurrent('It will filter by country twice', async () => {
     const country1 = 'United States';
     const country2 = 'Canada';
-    const service = interpret(machine).start();
-    vi.useFakeTimers();
-    await advanceByTime(0);
 
     service.send('TOGGLE_DROPDOWN_COUNTRY');
     service.send({
@@ -73,9 +83,6 @@ describe.concurrent('Working', () => {
 
   test.concurrent('It will filter by type', async () => {
     const propertyType = 'Apartment';
-    const service = interpret(machine).start();
-    vi.useFakeTimers();
-    await advanceByTime(0);
 
     service.send('TOGGLE_DROPDOWN_TYPE');
     service.send({
@@ -94,9 +101,6 @@ describe.concurrent('Working', () => {
   test.concurrent('It will filter by type twice', async () => {
     const propertyType1 = 'Apartment';
     const propertyType2 = 'House';
-    const service = interpret(machine).start();
-    vi.useFakeTimers();
-    await advanceByTime(0);
 
     service.send('TOGGLE_DROPDOWN_TYPE');
     service.send({
@@ -130,8 +134,6 @@ describe.concurrent('Working', () => {
   test.concurrent('It will filter by price range', async () => {
     const inferiorOrEqualTo = 200_000;
     const superiorOrEqualTo = 100_000;
-    const service = interpret(machine).start();
-    await advanceByTime(0);
 
     service.send('FOCUS_PRICE_INFERIOR');
     service.send({ type: 'SET_PRICE_INFERIOR', inferiorOrEqualTo });
@@ -155,9 +157,6 @@ describe.concurrent('Working', () => {
       const superiorOrEqualTo1 = 100_000;
       const inferiorOrEqualTo2 = 100_000;
       const superiorOrEqualTo2 = 30_000;
-      const service = interpret(machine).start();
-      vi.useFakeTimers();
-      await advanceByTime(0);
 
       service.send('FOCUS_PRICE_INFERIOR');
       service.send({
@@ -223,10 +222,6 @@ describe.concurrent('Working', () => {
     const country = 'United States';
     const propertyType = 'Apartment';
 
-    vi.useFakeTimers();
-
-    const service = interpret(machine).start();
-
     // #region Senders
     service.send('FOCUS_PRICE_INFERIOR');
     service.send({ type: 'SET_PRICE_INFERIOR', inferiorOrEqualTo });
@@ -275,9 +270,6 @@ describe.concurrent('Working', () => {
       const superiorOrEqualTo = 20_000;
       const country = 'United States';
       const propertyType = 'Apartment';
-      const service = interpret(machine).start();
-      vi.useFakeTimers();
-      await advanceByTime(0);
 
       // #region Senders
       service.send('FOCUS_PRICE_INFERIOR');

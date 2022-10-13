@@ -66,7 +66,8 @@ export interface Typegen0 {
       | "done.invoke.(machine).working.inputs.price.focus.inferiorTo.filtering:invocation[0]"
       | "done.invoke.(machine).working.inputs.price.focus.superiorTo.filtering:invocation[0]";
     generateLists: "done.invoke.(machine).starting:invocation[0]";
-    resetInputs: "RESET_INPUTS";
+    resetCache: "__RESET__";
+    resetInputs: "RESET_INPUTS" | "__RESET__";
     setPriceInferior: "SET_PRICE_INFERIOR";
     setPriceSuperior: "SET_PRICE_SUPERIOR";
   };
