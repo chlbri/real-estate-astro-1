@@ -12,7 +12,7 @@ const { title = 'test' } = Astro.props as Props;
 <html lang='en'>
   <MainHead title={title} />
   <body class='min-h-screen flex justify-between flex-col w-full'>
-    <div class='flex-1'>
+    <div class='flex-1 w-full'>
       <slot />
     </div>
     <MainFooter />

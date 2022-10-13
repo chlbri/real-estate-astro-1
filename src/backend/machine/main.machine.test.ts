@@ -1,7 +1,11 @@
 import { advanceByTime } from '@-utils/test';
 import { interpret } from 'xstate';
 import { MAIN_DATA } from '../data/main';
-import { machine } from './main.machine';
+import {
+  machine,
+  THROTTLE_TIME,
+  TIME_BETWEEN_REQUESTS,
+} from './main.machine';
 
 describe.concurrent('Acceptation', () => {
   test.concurrent('The machine is defined', () => {
@@ -15,6 +19,8 @@ describe.concurrent('Acceptation', () => {
 
 describe.concurrent('Working', () => {
   const service = interpret(machine);
+  const throttle = () => advanceByTime(THROTTLE_TIME + 1);
+  const waitForNext = () => advanceByTime(TIME_BETWEEN_REQUESTS + 1);
 
   beforeAll(() => {
     vi.useFakeTimers();
@@ -26,7 +32,7 @@ describe.concurrent('Working', () => {
   });
 
   beforeEach(async () => {
-    service.send('__RESET__');
+    service.send('__RINIT__');
     await advanceByTime(0);
   });
 
@@ -39,7 +45,7 @@ describe.concurrent('Working', () => {
       country,
     });
 
-    await advanceByTime(0);
+    await throttle();
 
     const actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toBeDefined();
@@ -58,14 +64,14 @@ describe.concurrent('Working', () => {
       country: country1,
     });
 
-    await advanceByTime(0);
+    await throttle();
 
     let actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toEqual(
       MAIN_DATA.filter((data) => data.country === country1)
     );
 
-    await advanceByTime(201);
+    await waitForNext();
 
     service.send('TOGGLE_DROPDOWN_COUNTRY');
     service.send({
@@ -73,7 +79,7 @@ describe.concurrent('Working', () => {
       country: country2,
     });
 
-    await advanceByTime(0);
+    await throttle();
 
     actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toEqual(
@@ -90,7 +96,7 @@ describe.concurrent('Working', () => {
       propertyType,
     });
 
-    await advanceByTime(0);
+    await throttle();
 
     const actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toEqual(
@@ -108,14 +114,14 @@ describe.concurrent('Working', () => {
       propertyType: propertyType1,
     });
 
-    await advanceByTime(0);
+    await throttle();
 
     let actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toEqual(
       MAIN_DATA.filter((data) => data.type === propertyType1)
     );
 
-    await advanceByTime(201);
+    await waitForNext();
 
     service.send('TOGGLE_DROPDOWN_TYPE');
     service.send({
@@ -123,7 +129,7 @@ describe.concurrent('Working', () => {
       propertyType: propertyType2,
     });
 
-    await advanceByTime(0);
+    await throttle();
 
     actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toEqual(
@@ -135,11 +141,11 @@ describe.concurrent('Working', () => {
     const inferiorOrEqualTo = 200_000;
     const superiorOrEqualTo = 100_000;
 
-    service.send('FOCUS_PRICE_INFERIOR');
+    // service.send('FOCUS_PRICE_INFERIOR');
     service.send({ type: 'SET_PRICE_INFERIOR', inferiorOrEqualTo });
+    await throttle();
     service.send({ type: 'SET_PRICE_SUPERIOR', superiorOrEqualTo });
-
-    await advanceByTime(0);
+    await throttle();
 
     const actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toEqual(
@@ -158,17 +164,17 @@ describe.concurrent('Working', () => {
       const inferiorOrEqualTo2 = 100_000;
       const superiorOrEqualTo2 = 30_000;
 
-      service.send('FOCUS_PRICE_INFERIOR');
       service.send({
         type: 'SET_PRICE_INFERIOR',
         inferiorOrEqualTo: inferiorOrEqualTo1,
       });
+      await throttle();
       service.send({
         type: 'SET_PRICE_SUPERIOR',
         superiorOrEqualTo: superiorOrEqualTo1,
       });
 
-      await advanceByTime(0);
+      await throttle();
 
       let actual = service.getSnapshot().context.ui.data.filtered;
       expect(actual).toEqual(
@@ -178,15 +184,14 @@ describe.concurrent('Working', () => {
         )
       );
 
-      await advanceByTime(201);
+      await waitForNext();
 
-      service.send('FOCUS_PRICE_INFERIOR');
       service.send({
         type: 'SET_PRICE_INFERIOR',
         inferiorOrEqualTo: inferiorOrEqualTo2,
       });
 
-      await advanceByTime(0);
+      await throttle();
 
       actual = service.getSnapshot().context.ui.data.filtered;
       expect(actual).toEqual(
@@ -196,15 +201,14 @@ describe.concurrent('Working', () => {
         )
       );
 
-      await advanceByTime(201);
+      await waitForNext();
 
-      service.send('FOCUS_PRICE_SUPERIOR');
       service.send({
         type: 'SET_PRICE_SUPERIOR',
         superiorOrEqualTo: superiorOrEqualTo2,
       });
 
-      await advanceByTime(0);
+      await throttle();
 
       actual = service.getSnapshot().context.ui.data.filtered;
       expect(actual).toEqual(
@@ -223,12 +227,10 @@ describe.concurrent('Working', () => {
     const propertyType = 'Apartment';
 
     // #region Senders
-    service.send('FOCUS_PRICE_INFERIOR');
     service.send({ type: 'SET_PRICE_INFERIOR', inferiorOrEqualTo });
     service.send({ type: 'SET_PRICE_SUPERIOR', superiorOrEqualTo });
 
-    await advanceByTime(201);
-    // await sleep(200);
+    await throttle();
 
     service.send('TOGGLE_DROPDOWN_TYPE');
     service.send({
@@ -236,7 +238,7 @@ describe.concurrent('Working', () => {
       propertyType,
     });
 
-    await advanceByTime(201);
+    await throttle();
     // await sleep(200);
 
     service.send('TOGGLE_DROPDOWN_COUNTRY');
@@ -246,7 +248,7 @@ describe.concurrent('Working', () => {
     });
     // #endregion
 
-    await advanceByTime(0);
+    await throttle();
 
     const actual = service.getSnapshot().context.ui.data.filtered;
 
@@ -272,9 +274,10 @@ describe.concurrent('Working', () => {
       const propertyType = 'Apartment';
 
       // #region Senders
-      service.send('FOCUS_PRICE_INFERIOR');
       service.send({ type: 'SET_PRICE_INFERIOR', inferiorOrEqualTo });
+      await throttle();
       service.send({ type: 'SET_PRICE_SUPERIOR', superiorOrEqualTo });
+      await throttle();
 
       service.send({
         type: 'FILTER_BY_TYPE',

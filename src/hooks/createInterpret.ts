@@ -1,19 +1,19 @@
-import cloneDeep from 'lodash.clonedeep';
-import { Accessor, batch, createMemo, createRoot } from 'solid-js';
-import { createStore, reconcile } from 'solid-js/store';
+import { Accessor, createMemo, createRoot, from } from 'solid-js';
 import {
   BaseActionObject,
-  EventFrom,
   EventObject,
   interpret,
   NoInfer,
+  Prop,
   ResolveTypegenMeta,
   ServiceMap,
+  State,
   StateMachine,
   TypegenDisabled,
+  TypegenEnabled,
   Typestate,
 } from 'xstate';
-import { matches as matchesD } from './helpers/matches';
+import { matches } from './helpers/matches';
 
 export function createInterpret<
   TContext,
@@ -42,41 +42,29 @@ export function createInterpret<
   >
 ) {
   const service = interpret(machine);
-  const { context: _context, value } =
-    service.getSnapshot() ?? service.initialState;
+  const store = from(service.start()) as Accessor<
+    State<TContext, TEvent, any, TTypestate, TResolvedTypesMeta>
+  >;
 
-  const [store, setStore] = createStore({
-    context: cloneDeep(_context),
-    matches: matchesD(value),
-  });
-
-  service.onTransition((state) => {
-    state.changed &&
-      batch(() => {
-        // diff data to only update values that changes
-        setStore('context', reconcile(cloneDeep(state.context)));
-        setStore('matches', () => matchesD(state.value));
-      });
-  });
-
-  type GetContextProps<T> = {
-    accessor: (ctx: TContext) => T;
-    equals?: (prev: T, next: T) => boolean;
-  };
-
-  type CContext = <T>(props: GetContextProps<T>) => Accessor<T>;
-
-  const context: CContext = ({ accessor, equals }) => {
+  const context = <T>(
+    accessor?: (ctx: TContext) => T,
+    equals?: (prev: T, next: T) => boolean
+  ) => {
     const memo = createRoot(() =>
-      createMemo(() => accessor(store.context), undefined, { equals })
+      createMemo(
+        () =>
+          !!accessor
+            ? accessor(store().context)
+            : (store().context as unknown as T),
+        undefined,
+        { equals }
+      )
     );
     return memo;
   };
 
-  type SenderProps = EventFrom<typeof machine>['type'];
-
-  const sender = <T extends SenderProps>(type: T) => {
-    type E = EventFrom<typeof machine> extends {
+  const sender = <T extends TEvent['type']>(type: T) => {
+    type E = TEvent extends {
       type: T;
     } & infer U
       ? U extends {}
@@ -90,14 +78,17 @@ export function createInterpret<
     };
   };
 
-  service.start();
-
   const output = {
     send: service.send,
     sender,
     subscribe: service.subscribe.bind(service),
-    matches: (value: string) => store.matches(value),
+    matches: matches(store().value),
     context,
+    hasTag: (
+      value: TResolvedTypesMeta extends TypegenEnabled
+        ? Prop<Prop<TResolvedTypesMeta, 'resolved'>, 'tags'>
+        : string
+    ) => store().hasTag(value),
   } as const;
 
   return output;

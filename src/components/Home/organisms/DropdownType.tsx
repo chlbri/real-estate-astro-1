@@ -5,19 +5,17 @@ import { LocationPin } from '../atoms/icons/LocationPin';
 import { ArrowToggle } from '../molecules/ArrowToggle';
 import {
   filter,
-  getCountries,
   getCurrent,
+  getTypes,
   isCurrent,
   toggle,
-} from './DropdownCountry.hooks';
+} from './DropdownType.hooks';
 
 type Props = {};
 
-export const DropdownCountry: Component<Props> = ({}) => {
+export const DropdownType: Component<Props> = ({}) => {
   const [opened, setOpened] = createSignal(false);
-  const [defaultValue, setDefaultValue] = createSignal(
-    'Select your place'
-  );
+  const [defaultValue, setDefaultValue] = createSignal('Select type');
 
   return (
     <div class='relative w-full lg:max-w-xs h-14 cursor-pointer px-2'>
@@ -29,7 +27,7 @@ export const DropdownCountry: Component<Props> = ({}) => {
         class='w-full text-left flex h-full px-[18px] border rounded-lg  items-center justify-between'
       >
         <LocationPin />
-        <div class='text-[13px]'>{getCurrent() ?? defaultValue()}</div>
+        <div class='text-[13px]'> {getCurrent() ?? defaultValue()}</div>
         <ArrowToggle open={opened} />
       </button>
       <ul
@@ -38,21 +36,21 @@ export const DropdownCountry: Component<Props> = ({}) => {
           'opacity-100': opened(),
         }}
       >
-        {[undefined, ...getCountries()].map((country) => (
+        {[undefined, ...getTypes()].map((propertyType) => (
           <li
             class='cursor-pointer transition hover:text-violet-500'
             onclick={() => {
-              filter({ country });
+              filter({ propertyType });
               setOpened(false);
               setDefaultValue((value) =>
                 value !== '< All >' ? '< All >' : value
               );
             }}
             classList={{
-              'text-violet-900': isCurrent(country),
+              'text-violet-900': isCurrent(propertyType),
             }}
           >
-            {country ?? '< All >'}
+            {propertyType ?? '< All >'}
           </li>
         ))}
       </ul>

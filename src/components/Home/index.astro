@@ -1,7 +1,8 @@
 ---
 import MainLayout from '@-layouts/MainLayout.astro';
 import Header from './molecules/Header.astro';
-import { DropdownCountry } from './organisms/DropdownCountry';
+import { Properties } from './organisms/Properties';
+import { Search } from './templates/Search';
 ---
 
 <MainLayout title={'Home'}>
@@ -9,8 +10,11 @@ import { DropdownCountry } from './organisms/DropdownCountry';
   <div
     class='px-[30px] py-6 max-w-[1170px] mx-auto flex flex-col lg:flex-row justify-between gap-4 lg:gap-x-3 relative lg:-top-4 lg:shadow-1 bg-white lg:bg-transparent lg:backdrop-blur rounded-lg w-full'
   >
+  </div>
+  <Search client:visible />
+  <!-- <div class='flex items-center justify-between'>
     <button
-      class='bg-violet-700 hover:bg-violet-800 transition w-full lg:max-w-[162px] h-16 rounded-lg flex justify-center items-center text-white text-lg'
+      class='bg-violet-700 hover:bg-violet-800 transition flex-grow max-w-xl lg:max-w-[162px] h-16 rounded-lg flex justify-center items-center text-white text-lg'
     >
       <svg
         xmlns='http://www.w3.org/2000/svg'
@@ -25,6 +29,6 @@ import { DropdownCountry } from './organisms/DropdownCountry';
         ></path>
       </svg>
     </button>
-  </div>
-  <DropdownCountry client:load />
+  </div> -->
+  <Properties client:idle />
 </MainLayout>
