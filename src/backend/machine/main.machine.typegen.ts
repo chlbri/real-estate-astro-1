@@ -4,18 +4,23 @@ export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
     "": { type: "" };
+    "done.invoke.(machine).hydration:invocation[0]": {
+      type: "done.invoke.(machine).hydration:invocation[0]";
+      data: unknown;
+      __tip: "See the XState TS docs to learn how to strongly type this.";
+    };
     "done.invoke.(machine).starting:invocation[0]": {
       type: "done.invoke.(machine).starting:invocation[0]";
       data: unknown;
       __tip: "See the XState TS docs to learn how to strongly type this.";
     };
-    "done.invoke.(machine).working.dropdowns.country.filtering:invocation[0]": {
-      type: "done.invoke.(machine).working.dropdowns.country.filtering:invocation[0]";
+    "done.invoke.(machine).working.dropdowns.country.hydration:invocation[0]": {
+      type: "done.invoke.(machine).working.dropdowns.country.hydration:invocation[0]";
       data: unknown;
       __tip: "See the XState TS docs to learn how to strongly type this.";
     };
-    "done.invoke.(machine).working.dropdowns.type.filtering:invocation[0]": {
-      type: "done.invoke.(machine).working.dropdowns.type.filtering:invocation[0]";
+    "done.invoke.(machine).working.dropdowns.type.hydration:invocation[0]": {
+      type: "done.invoke.(machine).working.dropdowns.type.hydration:invocation[0]";
       data: unknown;
       __tip: "See the XState TS docs to learn how to strongly type this.";
     };
@@ -24,10 +29,44 @@ export interface Typegen0 {
       data: unknown;
       __tip: "See the XState TS docs to learn how to strongly type this.";
     };
+    "done.invoke.(machine).working.inputs.price.inferiorTo.hydration:invocation[0]": {
+      type: "done.invoke.(machine).working.inputs.price.inferiorTo.hydration:invocation[0]";
+      data: unknown;
+      __tip: "See the XState TS docs to learn how to strongly type this.";
+    };
     "done.invoke.(machine).working.inputs.price.superiorTo.filtering:invocation[0]": {
       type: "done.invoke.(machine).working.inputs.price.superiorTo.filtering:invocation[0]";
       data: unknown;
       __tip: "See the XState TS docs to learn how to strongly type this.";
+    };
+    "done.invoke.(machine).working.inputs.price.superiorTo.hydration:invocation[0]": {
+      type: "done.invoke.(machine).working.inputs.price.superiorTo.hydration:invocation[0]";
+      data: unknown;
+      __tip: "See the XState TS docs to learn how to strongly type this.";
+    };
+    "error.platform.(machine).working.dropdowns.country.hydration:invocation[0]": {
+      type: "error.platform.(machine).working.dropdowns.country.hydration:invocation[0]";
+      data: unknown;
+    };
+    "error.platform.(machine).working.dropdowns.type.hydration:invocation[0]": {
+      type: "error.platform.(machine).working.dropdowns.type.hydration:invocation[0]";
+      data: unknown;
+    };
+    "error.platform.(machine).working.inputs.price.inferiorTo.filtering:invocation[0]": {
+      type: "error.platform.(machine).working.inputs.price.inferiorTo.filtering:invocation[0]";
+      data: unknown;
+    };
+    "error.platform.(machine).working.inputs.price.inferiorTo.hydration:invocation[0]": {
+      type: "error.platform.(machine).working.inputs.price.inferiorTo.hydration:invocation[0]";
+      data: unknown;
+    };
+    "error.platform.(machine).working.inputs.price.superiorTo.filtering:invocation[0]": {
+      type: "error.platform.(machine).working.inputs.price.superiorTo.filtering:invocation[0]";
+      data: unknown;
+    };
+    "error.platform.(machine).working.inputs.price.superiorTo.hydration:invocation[0]": {
+      type: "error.platform.(machine).working.inputs.price.superiorTo.hydration:invocation[0]";
+      data: unknown;
     };
     "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.country.filter": {
       type: "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.country.filter";
@@ -35,11 +74,14 @@ export interface Typegen0 {
     "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.type.filter": {
       type: "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.type.filter";
     };
-    "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.inferiorTo.focus": {
-      type: "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.inferiorTo.focus";
+    "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.inferiorTo.filter": {
+      type: "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.inferiorTo.filter";
     };
-    "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.superiorTo.focus": {
-      type: "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.superiorTo.focus";
+    "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.superiorTo.filter": {
+      type: "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.superiorTo.filter";
+    };
+    "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).waiting": {
+      type: "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).waiting";
     };
     "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).working.dropdowns.country.busy": {
       type: "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).working.dropdowns.country.busy";
@@ -58,11 +100,15 @@ export interface Typegen0 {
   };
   invokeSrcNameMap: {
     filterProperties:
-      | "done.invoke.(machine).working.dropdowns.country.filtering:invocation[0]"
-      | "done.invoke.(machine).working.dropdowns.type.filtering:invocation[0]"
       | "done.invoke.(machine).working.inputs.price.inferiorTo.filtering:invocation[0]"
       | "done.invoke.(machine).working.inputs.price.superiorTo.filtering:invocation[0]";
     generateLists: "done.invoke.(machine).starting:invocation[0]";
+    hydrateResearch: "done.invoke.(machine).hydration:invocation[0]";
+    saveFiltered:
+      | "done.invoke.(machine).working.dropdowns.country.hydration:invocation[0]"
+      | "done.invoke.(machine).working.dropdowns.type.hydration:invocation[0]"
+      | "done.invoke.(machine).working.inputs.price.inferiorTo.hydration:invocation[0]"
+      | "done.invoke.(machine).working.inputs.price.superiorTo.hydration:invocation[0]";
   };
   missingImplementations: {
     actions: never;
@@ -73,45 +119,48 @@ export interface Typegen0 {
   eventsCausingActions: {
     assignFilterCountry: "FILTER_BY_COUNTRY";
     assignFilterType: "FILTER_BY_TYPE";
+    buildQuery: "";
+    clearTimeouts: "SET_PRICE_INFERIOR" | "SET_PRICE_SUPERIOR";
     filter:
-      | "done.invoke.(machine).working.dropdowns.country.filtering:invocation[0]"
-      | "done.invoke.(machine).working.dropdowns.type.filtering:invocation[0]"
       | "done.invoke.(machine).working.inputs.price.inferiorTo.filtering:invocation[0]"
       | "done.invoke.(machine).working.inputs.price.superiorTo.filtering:invocation[0]";
     focusInferiorOrEqualTo: "";
     focusSuperiorOrEqualTo: "";
     generateLists: "done.invoke.(machine).starting:invocation[0]";
+    hydrateResearch: "done.invoke.(machine).hydration:invocation[0]";
     resetCache: "__RINIT__";
-    resetFilterCountry:
+    resetFilterCountry: "FILTER_BY_COUNTRY" | "__RINIT__" | "xstate.stop";
+    resetFilterInferiorOrEqualTo: "" | "__RINIT__" | "xstate.stop";
+    resetFilterSuperiorOrEqualTo: "" | "__RINIT__" | "xstate.stop";
+    resetFilterType: "FILTER_BY_TYPE" | "__RINIT__" | "xstate.stop";
+    resetInputs:
+      | "RESET_INPUTS"
       | "__RINIT__"
-      | "done.invoke.(machine).working.dropdowns.country.filtering:invocation[0]"
-      | "xstate.stop";
-    resetFilterInferiorOrEqualTo:
-      | "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.inferiorTo.focus"
-      | "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.superiorTo.focus";
-    resetFilterSuperiorOrEqualTo:
-      | "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.inferiorTo.focus"
-      | "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.superiorTo.focus";
-    resetFilterType:
-      | "__RINIT__"
-      | "done.invoke.(machine).working.dropdowns.type.filtering:invocation[0]"
-      | "xstate.stop";
-    resetInputs: "RESET_INPUTS" | "__RINIT__";
+      | "done.invoke.(machine).starting:invocation[0]";
     setPriceInferior: "SET_PRICE_INFERIOR";
     setPriceSuperior: "SET_PRICE_SUPERIOR";
+    toggleCountryDropdown: "TOGGLE_DROPDOWN_COUNTRY";
+    toggleTypeDropdown: "TOGGLE_DROPDOWN_TYPE";
   };
   eventsCausingServices: {
-    filterProperties:
-      | ""
-      | "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.country.filter"
-      | "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.type.filter";
+    filterProperties: "";
     generateLists: "";
+    hydrateResearch: "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).waiting";
+    saveFiltered:
+      | "done.invoke.(machine).working.inputs.price.inferiorTo.filtering:invocation[0]"
+      | "done.invoke.(machine).working.inputs.price.superiorTo.filtering:invocation[0]";
   };
   eventsCausingGuards: {
     inferiorAndSuperiorAreSet: "";
+    isBrowser:
+      | ""
+      | "done.invoke.(machine).starting:invocation[0]"
+      | "done.invoke.(machine).working.inputs.price.inferiorTo.filtering:invocation[0]"
+      | "done.invoke.(machine).working.inputs.price.superiorTo.filtering:invocation[0]";
     isCountryEditing: "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.country.filter";
-    isInferiorOrEqualEditing: "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.inferiorTo.focus";
-    isSuperiorOrEqualEditing: "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.superiorTo.focus";
+    isInferiorOrEqualEditing: "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.inferiorTo.filter";
+    isInputNumber: "SET_PRICE_INFERIOR" | "SET_PRICE_SUPERIOR";
+    isSuperiorOrEqualEditing: "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.superiorTo.filter";
     isTypeEditing: "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.type.filter";
   };
   eventsCausingDelays: {
@@ -121,44 +170,58 @@ export interface Typegen0 {
       | "FILTER_BY_TYPE"
       | "SET_PRICE_INFERIOR"
       | "SET_PRICE_SUPERIOR"
-      | "TOGGLE_DROPDOWN_COUNTRY"
-      | "TOGGLE_DROPDOWN_TYPE"
+      | "done.invoke.(machine).hydration:invocation[0]"
       | "done.invoke.(machine).starting:invocation[0]"
+      | "error.platform.(machine).working.dropdowns.country.hydration:invocation[0]"
+      | "error.platform.(machine).working.dropdowns.type.hydration:invocation[0]"
+      | "error.platform.(machine).working.inputs.price.inferiorTo.filtering:invocation[0]"
+      | "error.platform.(machine).working.inputs.price.inferiorTo.hydration:invocation[0]"
+      | "error.platform.(machine).working.inputs.price.superiorTo.filtering:invocation[0]"
+      | "error.platform.(machine).working.inputs.price.superiorTo.hydration:invocation[0]"
+      | "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).working.dropdowns.country.busy"
+      | "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).working.dropdowns.type.busy"
       | "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).working.inputs.price.inferiorTo.busy"
       | "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).working.inputs.price.superiorTo.busy";
     TIME_BETWEEN_REQUESTS:
-      | "done.invoke.(machine).working.dropdowns.country.filtering:invocation[0]"
-      | "done.invoke.(machine).working.dropdowns.type.filtering:invocation[0]"
+      | "done.invoke.(machine).starting:invocation[0]"
+      | "done.invoke.(machine).working.dropdowns.country.hydration:invocation[0]"
+      | "done.invoke.(machine).working.dropdowns.type.hydration:invocation[0]"
       | "done.invoke.(machine).working.inputs.price.inferiorTo.filtering:invocation[0]"
-      | "done.invoke.(machine).working.inputs.price.superiorTo.filtering:invocation[0]";
+      | "done.invoke.(machine).working.inputs.price.inferiorTo.hydration:invocation[0]"
+      | "done.invoke.(machine).working.inputs.price.superiorTo.filtering:invocation[0]"
+      | "done.invoke.(machine).working.inputs.price.superiorTo.hydration:invocation[0]";
   };
   matchesStates:
+    | "hydration"
     | "idle"
     | "starting"
+    | "waiting"
     | "working"
     | "working.dropdowns"
     | "working.dropdowns.country"
     | "working.dropdowns.country.busy"
     | "working.dropdowns.country.filter"
     | "working.dropdowns.country.filtering"
-    | "working.dropdowns.country.idle"
+    | "working.dropdowns.country.hydration"
     | "working.dropdowns.type"
     | "working.dropdowns.type.busy"
     | "working.dropdowns.type.filter"
     | "working.dropdowns.type.filtering"
-    | "working.dropdowns.type.idle"
+    | "working.dropdowns.type.hydration"
     | "working.inputs"
     | "working.inputs.price"
     | "working.inputs.price.inferiorTo"
     | "working.inputs.price.inferiorTo.busy"
+    | "working.inputs.price.inferiorTo.checking"
     | "working.inputs.price.inferiorTo.filter"
     | "working.inputs.price.inferiorTo.filtering"
-    | "working.inputs.price.inferiorTo.focus"
+    | "working.inputs.price.inferiorTo.hydration"
     | "working.inputs.price.superiorTo"
     | "working.inputs.price.superiorTo.busy"
+    | "working.inputs.price.superiorTo.checking"
     | "working.inputs.price.superiorTo.filter"
     | "working.inputs.price.superiorTo.filtering"
-    | "working.inputs.price.superiorTo.focus"
+    | "working.inputs.price.superiorTo.hydration"
     | {
         working?:
           | "dropdowns"
@@ -168,8 +231,8 @@ export interface Typegen0 {
                 | "country"
                 | "type"
                 | {
-                    country?: "busy" | "filter" | "filtering" | "idle";
-                    type?: "busy" | "filter" | "filtering" | "idle";
+                    country?: "busy" | "filter" | "filtering" | "hydration";
+                    type?: "busy" | "filter" | "filtering" | "hydration";
                   };
               inputs?:
                 | "price"
@@ -180,14 +243,16 @@ export interface Typegen0 {
                       | {
                           inferiorTo?:
                             | "busy"
+                            | "checking"
                             | "filter"
                             | "filtering"
-                            | "focus";
+                            | "hydration";
                           superiorTo?:
                             | "busy"
+                            | "checking"
                             | "filter"
                             | "filtering"
-                            | "focus";
+                            | "hydration";
                         };
                   };
             };

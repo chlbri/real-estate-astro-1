@@ -1,11 +1,8 @@
+import { THROTTLE_TIME, TIME_BETWEEN_REQUESTS } from '@-constants/numbers';
 import { advanceByTime } from '@-utils/test';
 import { interpret } from 'xstate';
 import { MAIN_DATA } from '../data/main';
-import {
-  machine,
-  THROTTLE_TIME,
-  TIME_BETWEEN_REQUESTS,
-} from './main.machine';
+import { machine } from './main.machine';
 
 describe.concurrent('Acceptation', () => {
   test.concurrent('The machine is defined', () => {
@@ -142,9 +139,15 @@ describe.concurrent('Working', () => {
     const superiorOrEqualTo = 100_000;
 
     // service.send('FOCUS_PRICE_INFERIOR');
-    service.send({ type: 'SET_PRICE_INFERIOR', inferiorOrEqualTo });
+    service.send({
+      type: 'SET_PRICE_INFERIOR',
+      value: '' + inferiorOrEqualTo,
+    });
     await throttle();
-    service.send({ type: 'SET_PRICE_SUPERIOR', superiorOrEqualTo });
+    service.send({
+      type: 'SET_PRICE_SUPERIOR',
+      value: '' + superiorOrEqualTo,
+    });
     await throttle();
 
     const actual = service.getSnapshot().context.ui.data.filtered;
@@ -166,12 +169,12 @@ describe.concurrent('Working', () => {
 
       service.send({
         type: 'SET_PRICE_INFERIOR',
-        inferiorOrEqualTo: inferiorOrEqualTo1,
+        value: '' + inferiorOrEqualTo1,
       });
       await throttle();
       service.send({
         type: 'SET_PRICE_SUPERIOR',
-        superiorOrEqualTo: superiorOrEqualTo1,
+        value: '' + superiorOrEqualTo1,
       });
 
       await throttle();
@@ -188,7 +191,7 @@ describe.concurrent('Working', () => {
 
       service.send({
         type: 'SET_PRICE_INFERIOR',
-        inferiorOrEqualTo: inferiorOrEqualTo2,
+        value: '' + inferiorOrEqualTo2,
       });
 
       await throttle();
@@ -205,7 +208,7 @@ describe.concurrent('Working', () => {
 
       service.send({
         type: 'SET_PRICE_SUPERIOR',
-        superiorOrEqualTo: superiorOrEqualTo2,
+        value: '' + superiorOrEqualTo2,
       });
 
       await throttle();
@@ -227,8 +230,14 @@ describe.concurrent('Working', () => {
     const propertyType = 'Apartment';
 
     // #region Senders
-    service.send({ type: 'SET_PRICE_INFERIOR', inferiorOrEqualTo });
-    service.send({ type: 'SET_PRICE_SUPERIOR', superiorOrEqualTo });
+    service.send({
+      type: 'SET_PRICE_INFERIOR',
+      value: '' + inferiorOrEqualTo,
+    });
+    service.send({
+      type: 'SET_PRICE_SUPERIOR',
+      value: '' + superiorOrEqualTo,
+    });
 
     await throttle();
 
@@ -274,9 +283,15 @@ describe.concurrent('Working', () => {
       const propertyType = 'Apartment';
 
       // #region Senders
-      service.send({ type: 'SET_PRICE_INFERIOR', inferiorOrEqualTo });
+      service.send({
+        type: 'SET_PRICE_INFERIOR',
+        value: '' + inferiorOrEqualTo,
+      });
       await throttle();
-      service.send({ type: 'SET_PRICE_SUPERIOR', superiorOrEqualTo });
+      service.send({
+        type: 'SET_PRICE_SUPERIOR',
+        value: '' + superiorOrEqualTo,
+      });
       await throttle();
 
       service.send({

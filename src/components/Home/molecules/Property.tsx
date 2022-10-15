@@ -1,11 +1,11 @@
 /** @jsxImportSource solid-js */
 
+import type { Property as P } from '@-backend/data/main';
+import { removePublic } from '@-backend/data/removePublic';
+import { AreaIcon } from '@-components/shared/atoms/icons/Area';
+import { BathIcon } from '@-components/shared/atoms/icons/Bath';
+import { BedIcon } from '@-components/shared/atoms/icons/Bed';
 import type { Component } from 'solid-js';
-import type { Property as P } from 'src/backend/data/main';
-import { removePublic } from 'src/backend/data/removePublic';
-import { AreaIcon } from '../atoms/icons/AreaIcon';
-import { BathIcon } from '../atoms/icons/BathIcon';
-import { BedIcon } from '../atoms/icons/BedIcon';
 
 type Props = {
   property: P;
@@ -13,7 +13,10 @@ type Props = {
 
 export const Property: Component<Props> = ({ property }) => {
   return (
-    <div class='bg-white shadow-1 p-5 rounded-lg rounded-tl-[90px] w-full max-w-[352px] mx-auto cursor-pointer hover:shadow-2xl transition'>
+    <a
+      class='bg-white shadow-1 p-5 rounded-lg rounded-tl-[90px] w-full max-w-[352px] mx-auto cursor-pointer hover:shadow-2xl transition flex flex-col'
+      href={`/properties/${property.id}`}
+    >
       <img class='mb-8' src={removePublic(property.image)} alt='' />
       <div class='mb-4 flex gap-x-2 text-sm'>
         <div class='bg-green-500 rounded-full text-white px-3 inline-block'>
@@ -43,6 +46,6 @@ export const Property: Component<Props> = ({ property }) => {
       <div class='text-lg font-semibold text-violet-600 mb-4'>
         $ {property.price}
       </div>
-    </div>
+    </a>
   );
 };

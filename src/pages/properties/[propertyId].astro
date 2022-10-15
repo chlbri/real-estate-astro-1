@@ -1,0 +1,18 @@
+---
+import { MAIN_DATA, Property } from '@-backend/data/main';
+import Page from '@-components/Properties/index.astro';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = () => {
+  return MAIN_DATA.map((property) => {
+    return {
+      params: { propertyId: '' + property.id },
+      props: { property },
+    };
+  });
+};
+
+const { property } = Astro.props as { property: Property };
+---
+
+<Page {...{property}} />

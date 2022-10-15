@@ -6,23 +6,19 @@ export const getTypes = context((context) => {
 });
 
 export const getCurrent = context(
-  (context) => context.ui.dropdowns.type.current
+  (context) =>
+    context.ui.dropdowns.type.current ??
+    context.ui.dropdowns.type.all ??
+    context.ui.dropdowns.type.default
 );
 
 export function isCurrent(type?: string) {
   return getCurrent() === type;
 }
 
-// export function isBusy() {
-//   return (
-//     matches('working.dropdowns.type.filtering') ||
-//     matches('working.dropdowns.type.busy')
-//   );
-// }
-
-// export function isNotBusy() {
-//   return matches('working.dropdowns.type.idle');
-// }
+export const canBeOpened = context(
+  (context) => context.ui.dropdowns.type.open
+);
 
 export const filter = sender('FILTER_BY_TYPE');
 

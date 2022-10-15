@@ -1,14 +1,11 @@
-import { createMemo } from 'solid-js';
-import { matches, sender } from 'src/hooks/main.service';
+import { context, sender } from '@-hooks/main.service';
 
-export const setPriceInferior = sender('SET_PRICE_INFERIOR');
-
-export const setPriceSuperior = sender('SET_PRICE_SUPERIOR');
-
-export const isFocusOnInferior = createMemo(() =>
-  matches('working.inputs.price.focus.inferiorTo.focus')
+export const setPriceInferiorOrEqual = sender('SET_PRICE_INFERIOR');
+export const getPriceInferiorOrEqual = context(
+  (context) => context.ui.inputs.price.inferiorOrEqualTo.current ?? ''
 );
 
-export const isFocusOnSuperior = createMemo(() =>
-  matches('working.inputs.price.focus.superiorTo.focus')
+export const setPriceSuperiorOrEqual = sender('SET_PRICE_SUPERIOR');
+export const getPriceSuperiorOrEqual = context(
+  (context) => context.ui.inputs.price.superiorOrEqualTo.current ?? ''
 );

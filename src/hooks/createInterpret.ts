@@ -42,7 +42,7 @@ export function createInterpret<
   >
 ) {
   const service = interpret(machine);
-  const store = from(service.start()) as Accessor<
+  const store = createRoot(() => from(service.start())) as Accessor<
     State<TContext, TEvent, any, TTypestate, TResolvedTypesMeta>
   >;
 
