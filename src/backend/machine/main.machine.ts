@@ -1,3 +1,15 @@
+import {
+  INTERVAL_RETURN,
+  INTERVAL_SWITCH,
+  THROTTLE_TIME,
+  TIME_BETWEEN_REQUESTS,
+} from '@-constants/numbers';
+import {
+  ALL_OPTIONS,
+  inferiorOrEqualToID,
+  LOCAL_STORAGE_ID,
+  superiorOrEqualToID,
+} from '@-constants/strings';
 import { assign } from '@xstate/immer';
 import { createMachine, EventFrom, StateFrom, StateMachine } from 'xstate';
 import { MAIN_DATA, Property, PropertyType } from '../data/main';
@@ -6,34 +18,79 @@ export type Context = {
   cache: {
     countries?: Set<string>;
     types?: Set<PropertyType>;
+    query?: {
+      country?: string;
+      type?: string;
+      inferiorOrEqualTo?: number;
+      superiorOrEqualTo?: number;
+    };
+    //TODO: To implement a invalidating system
+    prevQuery?: {
+      country?: string;
+      type?: string;
+      inferiorOrEqualTo?: number;
+      superiorOrEqualTo?: number;
+      date?: number;
+    };
   };
-
   ui: {
     dropdowns: {
       country: {
         editing: boolean;
         current?: string;
+        open: boolean;
+        blurred: number;
+        default: string;
+        all?: string;
       };
       type: {
         editing: boolean;
         current?: string;
+        open: boolean;
+        blurred: number;
+        default: string;
+        all?: string;
       };
     };
     inputs: {
       price: {
         inferiorOrEqualTo: {
           editing: boolean;
-          current?: number;
+          current?: string;
         };
         superiorOrEqualTo: {
           editing: boolean;
-          current?: number;
+          current?: string;
         };
       };
     };
     data: {
       filtered?: Property[];
     };
+    timeouts: {
+      inferiorFocusInterval?: ReturnType<typeof setTimeout>;
+      superiorFocusInterval?: ReturnType<typeof setTimeout>;
+    };
+  };
+};
+
+export type Events =
+  | { type: '__RINIT__' }
+  | { type: 'RESET_INPUTS' }
+  | { type: 'SET_PRICE_INFERIOR'; value?: string }
+  | { type: 'SET_PRICE_SUPERIOR'; value?: string }
+  | { type: 'TOGGLE_DROPDOWN_COUNTRY' }
+  | { type: 'TOGGLE_DROPDOWN_TYPE' }
+  | { type: 'FILTER_BY_COUNTRY'; country?: string }
+  | { type: 'FILTER_BY_TYPE'; propertyType?: PropertyType };
+
+export type HydrationData = {
+  filtered?: Property[];
+  filters?: {
+    inferiorOrEqualTo?: string;
+    superiorOrEqualTo?: string;
+    country?: string;
+    type?: string;
   };
 };
 
@@ -43,9 +100,15 @@ export const intialContext: Context = {
     dropdowns: {
       country: {
         editing: false,
+        open: false,
+        blurred: 0,
+        default: 'Select yout place',
       },
       type: {
         editing: false,
+        open: false,
+        blurred: 0,
+        default: 'Select type',
       },
     },
     inputs: {
@@ -59,20 +122,45 @@ export const intialContext: Context = {
       },
     },
     data: {},
+    timeouts: {},
   },
 };
 
-export const THROTTLE_TIME = 1000;
-export const TIME_BETWEEN_REQUESTS = 200;
-
-export const INTERVAL_SWITCH = 3.5 * 1000;
-export const INTERVAL_RETURN = 5 * 1000;
-
-export const superiorOrEqualToID = 'superiorOrEqualToID';
-export const inferiorOrEqualToID = 'inferiorOrEqualToID';
-
-let inferiorFocusInterval: any;
-let superiorFocusInterval: any;
+const commonStates = {
+  filtering: {
+    tags: ['busy'],
+    entry: ['buildQuery'],
+    invoke: {
+      src: 'filterProperties',
+      onDone: [
+        {
+          actions: ['filter'],
+          target: 'hydration',
+          cond: 'isBrowser',
+        },
+        {
+          actions: ['filter'],
+          target: 'busy',
+        },
+      ],
+      onError: 'filter',
+    },
+  },
+  hydration: {
+    tags: ['busy'],
+    invoke: {
+      src: 'saveFiltered',
+      onDone: 'busy',
+      onError: 'filter',
+    },
+  },
+  busy: {
+    tags: ['busy'],
+    after: {
+      TIME_BETWEEN_REQUESTS: 'filter',
+    },
+  },
+};
 
 export const machine = createMachine(
   {
@@ -80,21 +168,13 @@ export const machine = createMachine(
     tsTypes: {} as import('./main.machine.typegen').Typegen0,
     schema: {
       context: {} as Context,
-      events: {} as
-        | { type: '__RINIT__' }
-        | { type: 'RESET_INPUTS' }
-        | { type: 'SET_PRICE_INFERIOR'; inferiorOrEqualTo?: number }
-        | { type: 'SET_PRICE_SUPERIOR'; superiorOrEqualTo?: number }
-        | { type: 'TOGGLE_DROPDOWN_COUNTRY' }
-        | { type: 'TOGGLE_DROPDOWN_TYPE' }
-        | { type: 'FILTER_BY_COUNTRY'; country?: string }
-        | { type: 'FILTER_BY_TYPE'; propertyType?: PropertyType },
-
+      events: {} as Events,
       services: {} as {
         generateLists: {
           data: { types?: Set<PropertyType>; countries?: Set<string> };
         };
-
+        saveFiltered: { data: void };
+        hydrateResearch: { data: HydrationData | undefined };
         filterProperties: { data: Property[] };
       },
     },
@@ -117,12 +197,38 @@ export const machine = createMachine(
       starting: {
         invoke: {
           src: 'generateLists',
-          onDone: {
-            target: 'working',
-            actions: ['generateLists'],
-          },
+          onDone: [
+            {
+              target: 'waiting',
+              cond: 'isBrowser',
+              actions: ['generateLists', 'resetInputs'],
+            },
+            {
+              target: 'working',
+              actions: ['generateLists', 'resetInputs'],
+            },
+          ],
         },
       },
+      waiting: {
+        tags: ['busy'],
+        after: {
+          TIME_BETWEEN_REQUESTS: 'hydration',
+        },
+      },
+      hydration: {
+        tags: ['busy'],
+        invoke: {
+          src: 'hydrateResearch',
+          onDone: [
+            {
+              target: 'working',
+              actions: ['hydrateResearch'],
+            },
+          ],
+        },
+      },
+
       working: {
         type: 'parallel',
         on: {
@@ -135,21 +241,19 @@ export const machine = createMachine(
             type: 'parallel',
             states: {
               country: {
-                initial: 'idle',
-                states: {
-                  idle: {
-                    on: {
-                      TOGGLE_DROPDOWN_COUNTRY: { target: 'filter' },
-                    },
+                initial: 'filter',
+                on: {
+                  FILTER_BY_COUNTRY: {
+                    actions: ['assignFilterCountry'],
+                    target: '.filter',
+                    internal: false,
                   },
+                  TOGGLE_DROPDOWN_COUNTRY: {
+                    actions: ['toggleCountryDropdown'],
+                  },
+                },
+                states: {
                   filter: {
-                    on: {
-                      TOGGLE_DROPDOWN_COUNTRY: { target: 'idle' },
-                      FILTER_BY_COUNTRY: {
-                        actions: ['assignFilterCountry'],
-                        target: 'filter',
-                      },
-                    },
                     after: {
                       THROTTLE_TIME: {
                         cond: 'isCountryEditing',
@@ -157,41 +261,27 @@ export const machine = createMachine(
                       },
                     },
                   },
+                  ...commonStates,
                   filtering: {
-                    tags: ['busy'],
                     exit: ['resetFilterCountry'],
-                    invoke: {
-                      src: 'filterProperties',
-                      onDone: {
-                        actions: ['filter'],
-                        target: 'busy',
-                      },
-                    },
-                  },
-                  busy: {
-                    tags: ['busy'],
-                    after: {
-                      TIME_BETWEEN_REQUESTS: { target: 'idle' },
-                    },
+                    ...commonStates.filtering,
                   },
                 },
               },
               type: {
-                initial: 'idle',
-                states: {
-                  idle: {
-                    on: {
-                      TOGGLE_DROPDOWN_TYPE: { target: 'filter' },
-                    },
+                initial: 'filter',
+                on: {
+                  FILTER_BY_TYPE: {
+                    actions: ['assignFilterType'],
+                    target: '.filter',
+                    internal: false,
                   },
+                  TOGGLE_DROPDOWN_TYPE: {
+                    actions: ['toggleTypeDropdown'],
+                  },
+                },
+                states: {
                   filter: {
-                    on: {
-                      TOGGLE_DROPDOWN_TYPE: { target: 'idle' },
-                      FILTER_BY_TYPE: {
-                        actions: ['assignFilterType'],
-                        target: 'filter',
-                      },
-                    },
                     after: {
                       THROTTLE_TIME: {
                         cond: 'isTypeEditing',
@@ -199,33 +289,13 @@ export const machine = createMachine(
                       },
                     },
                   },
+                  ...commonStates,
                   filtering: {
-                    tags: ['busy'],
                     exit: ['resetFilterType'],
-                    invoke: {
-                      src: 'filterProperties',
-                      onDone: {
-                        actions: ['filter'],
-                        target: 'busy',
-                      },
-                    },
-                  },
-                  busy: {
-                    tags: ['busy'],
-                    after: {
-                      TIME_BETWEEN_REQUESTS: { target: 'idle' },
-                    },
+                    ...commonStates.filtering,
                   },
                 },
               },
-            },
-            on: {
-              // '*': {
-              //   actions: [
-              //     'resetFilterSuperiorOrEqualTo',
-              //     'resetFilterInferiorOrEqualTo',
-              //   ],
-              // },
             },
           },
           inputs: {
@@ -236,24 +306,25 @@ export const machine = createMachine(
                 states: {
                   inferiorTo: {
                     id: 'inferiorTo',
-                    initial: 'focus',
+                    initial: 'filter',
                     states: {
-                      focus: {
+                      filter: {
                         on: {
                           SET_PRICE_INFERIOR: {
-                            target: 'focus',
-                            actions: ['setPriceInferior'],
+                            target: 'filter',
+                            cond: 'isInputNumber',
+                            actions: ['setPriceInferior', 'clearTimeouts'],
                           },
                         },
                         after: {
                           THROTTLE_TIME: {
                             cond: 'isInferiorOrEqualEditing',
-                            target: 'filter',
+                            target: 'checking',
                           },
                         },
                       },
-                      filter: {
-                        entry: [
+                      checking: {
+                        exit: [
                           'resetFilterSuperiorOrEqualTo',
                           'resetFilterInferiorOrEqualTo',
                         ],
@@ -263,49 +334,37 @@ export const machine = createMachine(
                             target: 'filtering',
                           },
                           {
-                            target: 'focus',
+                            target: 'filter',
+                            cond: 'isBrowser',
                             actions: ['focusSuperiorOrEqualTo'],
                           },
+                          'filter',
                         ],
                       },
-                      filtering: {
-                        tags: ['busy'],
-                        invoke: {
-                          src: 'filterProperties',
-                          onDone: {
-                            actions: ['filter'],
-                            target: 'busy',
-                          },
-                        },
-                      },
-                      busy: {
-                        tags: ['busy'],
-                        after: {
-                          TIME_BETWEEN_REQUESTS: 'focus',
-                        },
-                      },
+                      ...commonStates,
                     },
                   },
                   superiorTo: {
                     id: 'superiorTo',
-                    initial: 'focus',
+                    initial: 'filter',
                     states: {
-                      focus: {
+                      filter: {
                         on: {
                           SET_PRICE_SUPERIOR: {
-                            target: 'focus',
-                            actions: ['setPriceSuperior'],
+                            target: 'filter',
+                            cond: 'isInputNumber',
+                            actions: ['setPriceSuperior', 'clearTimeouts'],
                           },
                         },
                         after: {
                           THROTTLE_TIME: {
                             cond: 'isSuperiorOrEqualEditing',
-                            target: 'filter',
+                            target: 'checking',
                           },
                         },
                       },
-                      filter: {
-                        entry: [
+                      checking: {
+                        exit: [
                           'resetFilterSuperiorOrEqualTo',
                           'resetFilterInferiorOrEqualTo',
                         ],
@@ -315,28 +374,14 @@ export const machine = createMachine(
                             target: 'filtering',
                           },
                           {
-                            target: 'focus',
+                            target: 'filter',
+                            cond: 'isBrowser',
                             actions: ['focusInferiorOrEqualTo'],
                           },
+                          'filter',
                         ],
                       },
-                      filtering: {
-                        tags: ['busy'],
-                        // exit: ['resetFilterSuperiorOrEqualTo'],
-                        invoke: {
-                          src: 'filterProperties',
-                          onDone: {
-                            actions: ['filter'],
-                            target: 'busy',
-                          },
-                        },
-                      },
-                      busy: {
-                        tags: ['busy'],
-                        after: {
-                          TIME_BETWEEN_REQUESTS: 'focus',
-                        },
-                      },
+                      ...commonStates,
                     },
                   },
                 },
@@ -349,6 +394,17 @@ export const machine = createMachine(
   },
   {
     actions: {
+      // #region Beginning
+      hydrateResearch: assign((context, { data }) => {
+        context.ui.data.filtered = data?.filtered;
+        context.ui.dropdowns.country.current = data?.filters?.country;
+        context.ui.dropdowns.type.current = data?.filters?.type;
+        context.ui.inputs.price.inferiorOrEqualTo.current =
+          data?.filters?.inferiorOrEqualTo;
+        context.ui.inputs.price.superiorOrEqualTo.current =
+          data?.filters?.superiorOrEqualTo;
+      }),
+
       resetCache: assign((context) => {
         context.cache = {};
       }),
@@ -359,53 +415,88 @@ export const machine = createMachine(
       }),
 
       resetInputs: assign((context) => {
-        context.ui.dropdowns.country = { editing: false };
-        context.ui.dropdowns.type = { editing: false };
+        context.ui.dropdowns.country = {
+          ...context.ui.dropdowns.country,
+          editing: false,
+          blurred: 0,
+          open: false,
+          current: undefined,
+        };
+
+        context.ui.dropdowns.type = {
+          ...context.ui.dropdowns.type,
+          editing: false,
+          blurred: 0,
+          open: false,
+          current: undefined,
+        };
+
         context.ui.inputs.price = {
           inferiorOrEqualTo: { editing: false },
           superiorOrEqualTo: { editing: false },
         };
       }),
+      // #endregion
 
-      // #region regionName
+      // #region Country
       assignFilterCountry: assign((context, { country }) => {
-        context.ui.dropdowns.country = { current: country, editing: true };
+        context.ui.dropdowns.country.current = country;
+        context.ui.dropdowns.country.editing = true;
+        const blurred = context.ui.dropdowns.country.blurred === 0;
+        if (blurred) {
+          context.ui.dropdowns.country.all = ALL_OPTIONS;
+        }
+        context.ui.dropdowns.country.blurred++;
       }),
 
       resetFilterCountry: assign((context) => {
         context.ui.dropdowns.country.editing = false;
       }),
+
+      toggleCountryDropdown: assign((context) => {
+        context.ui.dropdowns.country.open =
+          !context.ui.dropdowns.country.open;
+      }),
       // #endregion
 
-      // #region regionName
+      // #region PropertyType
       assignFilterType: assign((context, { propertyType }) => {
-        context.ui.dropdowns.type = {
-          current: propertyType,
-          editing: true,
-        };
+        context.ui.dropdowns.type.current = propertyType;
+        context.ui.dropdowns.type.editing = true;
+        const blurred = context.ui.dropdowns.type.blurred === 0;
+        if (blurred) {
+          context.ui.dropdowns.type.all = ALL_OPTIONS;
+        }
+        context.ui.dropdowns.type.blurred++;
       }),
 
       resetFilterType: assign((context) => {
         context.ui.dropdowns.type.editing = false;
       }),
+
+      toggleTypeDropdown: assign((context) => {
+        context.ui.dropdowns.type.open = !context.ui.dropdowns.type.open;
+      }),
       // #endregion
 
       // #region Price
-      setPriceInferior: assign((context, { inferiorOrEqualTo }) => {
-        inferiorFocusInterval = null;
+      setPriceInferior: assign((context, { value: inferiorOrEqualTo }) => {
         context.ui.inputs.price.inferiorOrEqualTo = {
           current: inferiorOrEqualTo,
           editing: true,
         };
-        clearTimeout(inferiorFocusInterval);
       }),
 
-      setPriceSuperior: assign((context, { superiorOrEqualTo }) => {
+      setPriceSuperior: assign((context, { value: superiorOrEqualTo }) => {
         context.ui.inputs.price.superiorOrEqualTo = {
           current: superiorOrEqualTo,
           editing: true,
         };
-        clearTimeout(superiorFocusInterval);
+      }),
+
+      clearTimeouts: assign((context) => {
+        clearTimeout(context.ui.timeouts.inferiorFocusInterval);
+        clearTimeout(context.ui.timeouts.superiorFocusInterval);
       }),
 
       resetFilterInferiorOrEqualTo: assign((context) => {
@@ -416,46 +507,68 @@ export const machine = createMachine(
         context.ui.inputs.price.superiorOrEqualTo.editing = false;
       }),
 
-      focusInferiorOrEqualTo: () => {
-        const isBrowser = () => typeof window !== `undefined`;
-        if (isBrowser()) {
-          inferiorFocusInterval = setTimeout(
-            () =>
-              document
-                ?.getElementById(inferiorOrEqualToID)
-                ?.classList.add('border-red-300', 'border-2'),
-            INTERVAL_SWITCH
-          );
-          superiorFocusInterval = setTimeout(
-            () =>
-              document
-                ?.getElementById(inferiorOrEqualToID)
-                ?.classList.remove('border-red-300', 'border-2'),
-            INTERVAL_RETURN
-          );
-        }
-      },
+      focusInferiorOrEqualTo: assign((context) => {
+        context.ui.timeouts.inferiorFocusInterval = setTimeout(
+          () =>
+            document
+              ?.getElementById(inferiorOrEqualToID)
+              ?.classList.add('border-red-300', 'border-2'),
+          INTERVAL_SWITCH
+        );
+        context.ui.timeouts.superiorFocusInterval = setTimeout(
+          () =>
+            document
+              ?.getElementById(inferiorOrEqualToID)
+              ?.classList.remove('border-red-300', 'border-2'),
+          INTERVAL_RETURN
+        );
+      }),
 
-      focusSuperiorOrEqualTo: () => {
-        const isBrowser = () => typeof window !== `undefined`;
-        if (isBrowser()) {
-          superiorFocusInterval = setTimeout(
-            () =>
-              document
-                ?.getElementById(superiorOrEqualToID)
-                ?.classList.add('border-red-300', 'border-2'),
-            INTERVAL_SWITCH
-          );
-          inferiorFocusInterval = setTimeout(
-            () =>
-              document
-                ?.getElementById(superiorOrEqualToID)
-                ?.classList.remove('border-red-300', 'border-2'),
-            INTERVAL_RETURN
-          );
-        }
-      },
+      focusSuperiorOrEqualTo: assign((context) => {
+        context.ui.timeouts.inferiorFocusInterval = setTimeout(
+          () =>
+            document
+              ?.getElementById(inferiorOrEqualToID)
+              ?.classList.remove('border-red-300', 'border-2'),
+          INTERVAL_RETURN
+        );
+        context.ui.timeouts.superiorFocusInterval = setTimeout(
+          () =>
+            document
+              ?.getElementById(superiorOrEqualToID)
+              ?.classList.add('border-red-300', 'border-2'),
+          INTERVAL_SWITCH
+        );
+      }),
       // #endregion
+
+      buildQuery: assign((context) => {
+        const country = context.ui.dropdowns.country.current;
+        const type = context.ui.dropdowns.type.current;
+        const inferiorOrEqualToBeforeParsing =
+          context.ui.inputs.price.inferiorOrEqualTo.current;
+        const superiorOrEqualToBeforeParsing =
+          context.ui.inputs.price.superiorOrEqualTo.current;
+
+        const inferiorOrEqualTo =
+          !!inferiorOrEqualToBeforeParsing &&
+          inferiorOrEqualToBeforeParsing.trim() !== ''
+            ? Number.parseInt(inferiorOrEqualToBeforeParsing)
+            : undefined;
+
+        const superiorOrEqualTo =
+          !!superiorOrEqualToBeforeParsing &&
+          superiorOrEqualToBeforeParsing.trim() !== ''
+            ? Number.parseInt(superiorOrEqualToBeforeParsing)
+            : undefined;
+
+        context.cache.query = {
+          country,
+          type,
+          inferiorOrEqualTo,
+          superiorOrEqualTo,
+        };
+      }),
 
       filter: assign((context, { data }) => {
         context.ui.data.filtered = data;
@@ -482,6 +595,12 @@ export const machine = createMachine(
       isSuperiorOrEqualEditing: (context) => {
         return context.ui.inputs.price.superiorOrEqualTo.editing;
       },
+
+      isBrowser: () => typeof window !== `undefined`,
+
+      isInputNumber: (_, { value }) => {
+        return !value || /\d+/.test(value);
+      },
       // #endregion
 
       isCountryEditing: (context) => {
@@ -502,12 +621,13 @@ export const machine = createMachine(
 
       filterProperties: async (context) => {
         // #region Variables
-        const currentCountry = context.ui.dropdowns.country.current;
-        const currentType = context.ui.dropdowns.type.current;
-        const inferiorOrEqualTo =
-          context.ui.inputs.price.inferiorOrEqualTo.current;
-        const superiorOrEqualTo =
-          context.ui.inputs.price.superiorOrEqualTo.current;
+        const query = context.cache.query!;
+        const {
+          country: currentCountry,
+          type: currentType,
+          inferiorOrEqualTo,
+          superiorOrEqualTo,
+        } = query;
         // #endregion
 
         const out = MAIN_DATA.filter(
@@ -519,6 +639,33 @@ export const machine = createMachine(
         );
 
         return out;
+      },
+
+      saveFiltered: async (context) => {
+        const inferiorOrEqualTo =
+          context.ui.inputs.price.inferiorOrEqualTo.current;
+        const superiorOrEqualTo =
+          context.ui.inputs.price.superiorOrEqualTo.current;
+
+        const country = context.ui.dropdowns.country.current;
+        const type = context.ui.dropdowns.type.current;
+        const data: HydrationData = {
+          filtered: context.ui.data.filtered,
+          filters: {
+            inferiorOrEqualTo,
+            superiorOrEqualTo,
+            country,
+            type,
+          },
+        };
+        localStorage.setItem(LOCAL_STORAGE_ID, JSON.stringify(data));
+      },
+
+      hydrateResearch: async () => {
+        const raw = localStorage.getItem(LOCAL_STORAGE_ID);
+        if (!raw) return;
+        const data = JSON.parse(raw) as HydrationData;
+        return data;
       },
     },
 

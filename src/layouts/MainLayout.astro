@@ -4,17 +4,18 @@ import MainHead from './MainHead.astro';
 
 export type Props = {
   title?: string;
+  lang?: string;
 };
 
-const { title = 'test' } = Astro.props as Props;
+const { title = 'test', lang = 'en' } = Astro.props as Props;
 ---
 
-<html lang='en'>
-  <MainHead title={title} />
-  <body class='min-h-screen flex justify-between flex-col w-full'>
-    <div class='flex-1 w-full'>
-      <slot />
-    </div>
+<html {...{lang}}>
+  <MainHead {...{title}} />
+  <body
+    class='min-h-screen flex justify-between flex-col w-full pt-10 px-3'
+  >
+    <slot />
     <MainFooter />
   </body>
 </html>

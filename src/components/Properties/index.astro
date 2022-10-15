@@ -1,28 +1,101 @@
 ---
+import type { Property } from '@-backend/data/main';
+import { removePublic } from '@-backend/data/removePublic';
+import { AreaIcon } from '@-components/shared/atoms/icons/Area';
+import { BackIcon } from '@-components/shared/atoms/icons/Back';
+import { BathIcon } from '@-components/shared/atoms/icons/Bath';
+import { BedIcon } from '@-components/shared/atoms/icons/Bed';
 import MainLayout from '@-layouts/MainLayout.astro';
+import { ContactForm } from './organisms/ContactForm';
+
+export type Props = {
+  property: Property;
+};
+
+const { property } = Astro.props as Props;
+const agentImage = removePublic(property.agent.image);
+const propertyImage = removePublic(property.imageLg);
 ---
 
-<MainLayout title={'Home'}>
-  <header class='h-full max-h-[640px] mb-8 xl:mb-24'>
-    <div class='flex flex-col lg:flex-row'>
-      <div
-        class='lg:ml-8 xl:ml-[135px] flex flex-col items-center lg:items-start text-center lg:text-left justify-center flex-1 px-4 lg:px-0'
+<MainLayout title='Details'>
+  <div
+    class='container mx-auto min-h-[800px] mb-14 mt-5 flex flex-col space-y-8'
+  >
+    <a
+      href='/'
+      class='transition duration-200 ease-in-out hover:text-emerald-800 hover:drop-shadow-md flex w-32 items-center justify-between text-slate-600'
+    >
+      <BackIcon />
+      <span>Research</span>
+    </a>
+    <div>
+      <!-- #region header -->
+      <section
+        class='flex flex-col space-y-4 lg:space-y-0 lg:space-x-4 lg:flex-row lg:items-center lg:justify-between'
       >
-        <h1
-          class='text-4xl lg:text-[58px] font-semibold leading-none mb-6'
+        <div>
+          <h2 class='text-2xl font-semibold'>{property.name}</h2>
+          <h3 class='text-lg mb-4'>
+            <address>{property.address}</address>
+          </h3>
+        </div>
+        <div class='flex gap-x-2 text-sm'>
+          <div
+            class='bg-green-500 rounded-full text-white px-3 inline-block'
+          >
+            {property.type}
+          </div>
+          <div
+            class='bg-violet-500 rounded-full text-white px-3 inline-block'
+          >
+            {property.country}
+          </div>
+        </div>
+        <div class='text-3xl font-semibold text-violet-600'>
+          $ {property.price}
+        </div>
+      </section>
+      <!-- #endregion -->
+
+      <main class='flex flex-col items-start gap-8 xl:flex-row'>
+        <!-- #region Carrousel Image -->
+        <article class='max-w-[768px] flex flex-col space-y-6'>
+          <img src={propertyImage} alt='Property Image' />
+          <div class='flex gap-x-6 text-violet-700'>
+            <div class='flex gap-x-2 items-center'>
+              <BedIcon />
+              <div class='text-lg font-medium'>{property.bedrooms}</div>
+            </div>
+            <div class='flex gap-x-2 items-center'>
+              <BathIcon />
+              <div class='text-lg font-medium'>{property.bathrooms}</div>
+            </div>
+            <div class='flex gap-x-2 items-center'>
+              <AreaIcon />
+              <div class='text-lg font-medium'>{property.surface}</div>
+            </div>
+          </div>
+          <p>{property.description}</p>
+        </article>
+        <!-- #endregion -->
+
+        <!-- #region Formulaire -->
+        <aside
+          class='flex-1 w-full mb-8 bg-white border border-gray-300 rounded-lg px-6 py-8'
         >
-          <span class='text-violet-700'>Rent</span> Your Dream House With Us.
-        </h1>
-        <p class='max-w-[480px] mb-8'>
-          Powerful, self-serve product and growth analytics to help you
-          convert, engage, and retain more.
-        </p>
-      </div>
-      <img
-        class='hidden flex-1 lg:flex justify-end items-end'
-        src='/images/house-banner.png'
-        alt='the banner'
-      />
+          <div class='flex items-center gap-x-4 mb-8'>
+            <div class='w-20 h-20 p-1 border border-gray-300 rounded-full'>
+              <img src={agentImage} />
+            </div>
+            <div>
+              <div class='font-bold text-lg'>{property.agent.name}</div>
+              <a href='#' class='text-violet-700 text-sm'>View listings</a>
+            </div>
+          </div>
+          <ContactForm client:idle />
+        </aside>
+        <!-- #endregion -->
+      </main>
     </div>
-  </header>
+  </div>
 </MainLayout>

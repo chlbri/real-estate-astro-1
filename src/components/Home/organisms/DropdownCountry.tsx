@@ -1,9 +1,11 @@
 /** @jsxImportSource solid-js */
 
-import { Component, createSignal } from 'solid-js';
-import { LocationPin } from '../atoms/icons/LocationPin';
+import { getLabel } from '@-hooks/helpers/getLabel';
+import type { Component } from 'solid-js';
+import { LocationPin } from '../../shared/atoms/icons/LocationPin';
 import { ArrowToggle } from '../molecules/ArrowToggle';
 import {
+  canBeOpened,
   filter,
   getCountries,
   getCurrent,
@@ -14,28 +16,22 @@ import {
 type Props = {};
 
 export const DropdownCountry: Component<Props> = ({}) => {
-  const [opened, setOpened] = createSignal(false);
-  const [defaultValue, setDefaultValue] = createSignal(
-    'Select your place'
-  );
-
   return (
     <div class='relative w-full lg:max-w-xs h-14 cursor-pointer px-2'>
       <button
         onClick={() => {
           toggle();
-          setOpened((value) => !value);
         }}
         class='w-full text-left flex h-full px-[18px] border rounded-lg  items-center justify-between'
       >
         <LocationPin />
-        <div class='text-[13px]'>{getCurrent() ?? defaultValue()}</div>
-        <ArrowToggle open={opened} />
+        <div class='text-[13px]'>{getCurrent()}</div>
+        <ArrowToggle open={canBeOpened} />
       </button>
       <ul
-        class='px-6 py-8 text-[15px] space-y-6 shadow-md bg-white  w-full z-10 list-none rounded-b-lg absolute opacity-0'
+        class='px-6 py-8 text-[15px] space-y-6 shadow-md bg-white w-11/12 z-10 list-none rounded-b-lg absolute flex-col opacity-0 transition-opacity duration-300 ease-out pointer-events-none'
         classList={{
-          'opacity-100': opened(),
+          'opacity-90 pointer-events-auto': canBeOpened(),
         }}
       >
         {[undefined, ...getCountries()].map((country) => (
@@ -43,16 +39,13 @@ export const DropdownCountry: Component<Props> = ({}) => {
             class='cursor-pointer transition hover:text-violet-500'
             onclick={() => {
               filter({ country });
-              setOpened(false);
-              setDefaultValue((value) =>
-                value !== '< All >' ? '< All >' : value
-              );
+              toggle();
             }}
             classList={{
               'text-violet-900': isCurrent(country),
             }}
           >
-            {country ?? '< All >'}
+            {getLabel(country)}
           </li>
         ))}
       </ul>

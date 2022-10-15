@@ -1,7 +1,7 @@
-import { context, hasTag } from 'src/hooks/main.service';
+import { context, hasTag } from '@-hooks/main.service';
 
 export const getFilteredData = context(
-  (context) => context.ui.data.filtered
+  (context) => context.ui.data.filtered ?? []
 );
 
 export const isBusy = () => {

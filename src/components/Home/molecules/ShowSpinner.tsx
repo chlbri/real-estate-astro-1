@@ -1,8 +1,8 @@
 /** @jsxImportSource solid-js */
 
+import { Spinner } from '@-components/shared/atoms/Spinner';
 import type { Component, JSX } from 'solid-js';
 import { Show } from 'solid-js';
-import { Spinner } from '../atoms/Spinner';
 
 type Props = {
   when: boolean;
