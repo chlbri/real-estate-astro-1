@@ -34,7 +34,7 @@ export const DropdownType: Component<Props> = ({}) => {
           'opacity-90 pointer-events-auto': canBeOpened(),
         }}
       >
-        {[undefined, ...getTypes()].map((propertyType) => (
+        {getTypes().map((propertyType) => (
           <li
             class='cursor-pointer transition hover:text-violet-500'
             onclick={() => {
@@ -45,7 +45,7 @@ export const DropdownType: Component<Props> = ({}) => {
               'text-violet-900': isCurrent(propertyType),
             }}
           >
-            {getLabel(propertyType)}
+            {propertyType}
           </li>
         ))}
       </ul>

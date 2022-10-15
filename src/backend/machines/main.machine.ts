@@ -10,9 +10,11 @@ import {
   LOCAL_STORAGE_ID,
   superiorOrEqualToID,
 } from '@-constants/strings';
+import { isBrowser } from '@-utils/environment';
 import { assign } from '@xstate/immer';
-import { createMachine, EventFrom, StateFrom, StateMachine } from 'xstate';
+import { createMachine, EventFrom, StateFrom } from 'xstate';
 import { MAIN_DATA, Property, PropertyType } from '../data/main';
+import { filterMachine } from './filter.machine';
 
 export type Context = {
   cache: {
@@ -39,17 +41,13 @@ export type Context = {
         editing: boolean;
         current?: string;
         open: boolean;
-        blurred: number;
         default: string;
-        all?: string;
       };
       type: {
         editing: boolean;
         current?: string;
         open: boolean;
-        blurred: number;
         default: string;
-        all?: string;
       };
     };
     inputs: {
@@ -101,13 +99,11 @@ export const intialContext: Context = {
       country: {
         editing: false,
         open: false,
-        blurred: 0,
         default: 'Select yout place',
       },
       type: {
         editing: false,
         open: false,
-        blurred: 0,
         default: 'Select type',
       },
     },
@@ -131,7 +127,8 @@ const commonStates = {
     tags: ['busy'],
     entry: ['buildQuery'],
     invoke: {
-      src: 'filterProperties',
+      src: 'filterMachine',
+
       onDone: [
         {
           actions: ['filter'],
@@ -165,6 +162,7 @@ const commonStates = {
 export const machine = createMachine(
   {
     predictableActionArguments: true,
+    preserveActionOrder: true,
     tsTypes: {} as import('./main.machine.typegen').Typegen0,
     schema: {
       context: {} as Context,
@@ -175,7 +173,7 @@ export const machine = createMachine(
         };
         saveFiltered: { data: void };
         hydrateResearch: { data: HydrationData | undefined };
-        filterProperties: { data: Property[] };
+        filterMachine: { data: Property[] };
       },
     },
     context: intialContext,
@@ -261,10 +259,22 @@ export const machine = createMachine(
                       },
                     },
                   },
-                  ...commonStates,
                   filtering: {
-                    exit: ['resetFilterCountry'],
-                    ...commonStates.filtering,
+                    entry: ['resetFilterCountry', 'buildQuery'],
+                    invoke: {
+                      src: 'filterMachine',
+                      data: (context) => {
+                        return {
+                          name: 'COUNTRY',
+                          ...context.cache.query,
+                        };
+                      },
+                      onDone: {
+                        actions: ['filter'],
+                        target: 'filter',
+                      },
+                      onError: 'filter',
+                    },
                   },
                 },
               },
@@ -289,10 +299,22 @@ export const machine = createMachine(
                       },
                     },
                   },
-                  ...commonStates,
                   filtering: {
-                    exit: ['resetFilterType'],
-                    ...commonStates.filtering,
+                    entry: ['resetFilterType', 'buildQuery'],
+                    invoke: {
+                      src: 'filterMachine',
+                      data: (context) => {
+                        return {
+                          name: 'TYPE',
+                          ...context.cache.query,
+                        };
+                      },
+                      onDone: {
+                        actions: ['filter'],
+                        target: 'filter',
+                      },
+                      onError: 'filter',
+                    },
                   },
                 },
               },
@@ -341,7 +363,23 @@ export const machine = createMachine(
                           'filter',
                         ],
                       },
-                      ...commonStates,
+                      filtering: {
+                        entry: ['buildQuery'],
+                        invoke: {
+                          src: 'filterMachine',
+                          data: (context) => {
+                            return {
+                              name: 'INFERIOR',
+                              ...context.cache.query,
+                            };
+                          },
+                          onDone: {
+                            actions: ['filter'],
+                            target: 'filter',
+                          },
+                          onError: 'filter',
+                        },
+                      },
                     },
                   },
                   superiorTo: {
@@ -381,7 +419,23 @@ export const machine = createMachine(
                           'filter',
                         ],
                       },
-                      ...commonStates,
+                      filtering: {
+                        entry: ['buildQuery'],
+                        invoke: {
+                          src: 'filterMachine',
+                          data: (context) => {
+                            return {
+                              name: 'SUPERIOR',
+                              ...context.cache.query,
+                            };
+                          },
+                          onDone: {
+                            actions: ['filter'],
+                            target: 'filter',
+                          },
+                          onError: 'filter',
+                        },
+                      },
                     },
                   },
                 },
@@ -418,7 +472,6 @@ export const machine = createMachine(
         context.ui.dropdowns.country = {
           ...context.ui.dropdowns.country,
           editing: false,
-          blurred: 0,
           open: false,
           current: undefined,
         };
@@ -426,7 +479,6 @@ export const machine = createMachine(
         context.ui.dropdowns.type = {
           ...context.ui.dropdowns.type,
           editing: false,
-          blurred: 0,
           open: false,
           current: undefined,
         };
@@ -442,11 +494,6 @@ export const machine = createMachine(
       assignFilterCountry: assign((context, { country }) => {
         context.ui.dropdowns.country.current = country;
         context.ui.dropdowns.country.editing = true;
-        const blurred = context.ui.dropdowns.country.blurred === 0;
-        if (blurred) {
-          context.ui.dropdowns.country.all = ALL_OPTIONS;
-        }
-        context.ui.dropdowns.country.blurred++;
       }),
 
       resetFilterCountry: assign((context) => {
@@ -463,11 +510,6 @@ export const machine = createMachine(
       assignFilterType: assign((context, { propertyType }) => {
         context.ui.dropdowns.type.current = propertyType;
         context.ui.dropdowns.type.editing = true;
-        const blurred = context.ui.dropdowns.type.blurred === 0;
-        if (blurred) {
-          context.ui.dropdowns.type.all = ALL_OPTIONS;
-        }
-        context.ui.dropdowns.type.blurred++;
       }),
 
       resetFilterType: assign((context) => {
@@ -596,7 +638,7 @@ export const machine = createMachine(
         return context.ui.inputs.price.superiorOrEqualTo.editing;
       },
 
-      isBrowser: () => typeof window !== `undefined`,
+      isBrowser,
 
       isInputNumber: (_, { value }) => {
         return !value || /\d+/.test(value);
@@ -615,51 +657,13 @@ export const machine = createMachine(
     services: {
       generateLists: async () => {
         const types = new Set(MAIN_DATA.map((data) => data.type));
+        types.add(ALL_OPTIONS);
         const countries = new Set(MAIN_DATA.map((data) => data.country));
+        countries.add(ALL_OPTIONS);
         return { types, countries };
       },
 
-      filterProperties: async (context) => {
-        // #region Variables
-        const query = context.cache.query!;
-        const {
-          country: currentCountry,
-          type: currentType,
-          inferiorOrEqualTo,
-          superiorOrEqualTo,
-        } = query;
-        // #endregion
-
-        const out = MAIN_DATA.filter(
-          ({ country, type, price }) =>
-            (!currentCountry || country === currentCountry) &&
-            (!currentType || type === currentType) &&
-            (!inferiorOrEqualTo || price <= inferiorOrEqualTo) &&
-            (superiorOrEqualTo === undefined || price >= superiorOrEqualTo)
-        );
-
-        return out;
-      },
-
-      saveFiltered: async (context) => {
-        const inferiorOrEqualTo =
-          context.ui.inputs.price.inferiorOrEqualTo.current;
-        const superiorOrEqualTo =
-          context.ui.inputs.price.superiorOrEqualTo.current;
-
-        const country = context.ui.dropdowns.country.current;
-        const type = context.ui.dropdowns.type.current;
-        const data: HydrationData = {
-          filtered: context.ui.data.filtered,
-          filters: {
-            inferiorOrEqualTo,
-            superiorOrEqualTo,
-            country,
-            type,
-          },
-        };
-        localStorage.setItem(LOCAL_STORAGE_ID, JSON.stringify(data));
-      },
+      filterMachine,
 
       hydrateResearch: async () => {
         const raw = localStorage.getItem(LOCAL_STORAGE_ID);
@@ -679,14 +683,3 @@ export const machine = createMachine(
 export type MainMachine = typeof machine;
 export type EventMachine = EventFrom<MainMachine>;
 export type State = StateFrom<MainMachine>;
-export type ContextFrom<T extends any> = T extends StateMachine<
-  infer U,
-  any,
-  any,
-  any,
-  any,
-  any,
-  any
->
-  ? U
-  : never;

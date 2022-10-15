@@ -8,7 +8,6 @@ export const getCountries = context((context) => {
 export const getCurrent = context(
   (context) =>
     context.ui.dropdowns.country.current ??
-    context.ui.dropdowns.country.all ??
     context.ui.dropdowns.country.default
 );
 

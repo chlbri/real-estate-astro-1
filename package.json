@@ -18,6 +18,7 @@
     "@bemedev/decompose": "^0.1.6",
     "@xstate/immer": "^0.3.1",
     "astro": "^1.4.7",
+    "dequal": "^2.0.3",
     "immer": "^9.0.15",
     "solid-js": "^1.4.3",
     "xstate": "^4.33.6"

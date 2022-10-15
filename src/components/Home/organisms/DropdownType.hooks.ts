@@ -7,9 +7,7 @@ export const getTypes = context((context) => {
 
 export const getCurrent = context(
   (context) =>
-    context.ui.dropdowns.type.current ??
-    context.ui.dropdowns.type.all ??
-    context.ui.dropdowns.type.default
+    context.ui.dropdowns.type.current ?? context.ui.dropdowns.type.default
 );
 
 export function isCurrent(type?: string) {

@@ -34,7 +34,7 @@ export const DropdownCountry: Component<Props> = ({}) => {
           'opacity-90 pointer-events-auto': canBeOpened(),
         }}
       >
-        {[undefined, ...getCountries()].map((country) => (
+        {getCountries().map((country) => (
           <li
             class='cursor-pointer transition hover:text-violet-500'
             onclick={() => {
@@ -45,7 +45,7 @@ export const DropdownCountry: Component<Props> = ({}) => {
               'text-violet-900': isCurrent(country),
             }}
           >
-            {getLabel(country)}
+            {country}
           </li>
         ))}
       </ul>

@@ -7,6 +7,7 @@ specifiers:
   '@bemedev/decompose': ^0.1.6
   '@xstate/immer': ^0.3.1
   astro: ^1.4.7
+  dequal: ^2.0.3
   immer: ^9.0.15
   solid-js: ^1.4.3
   tailwindcss: ^3.0.24
@@ -21,6 +22,7 @@ dependencies:
   '@bemedev/decompose': 0.1.6
   '@xstate/immer': 0.3.1_immer@9.0.15+xstate@4.33.6
   astro: 1.5.0
+  dequal: 2.0.3
   immer: 9.0.15
   solid-js: 1.5.7
   xstate: 4.33.6
