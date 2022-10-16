@@ -18,7 +18,6 @@ export const inputMachine = createMachine(
     preserveActionOrder: true,
     tsTypes: {} as import('./input.machine.typegen').Typegen0,
     schema: { context: {} as Context, events: {} as Events },
-    //TODO: Not end the machine
     initial: 'idle',
     on: {
       INPUT: {
@@ -39,7 +38,10 @@ export const inputMachine = createMachine(
       },
       done: {
         entry: 'resetEdititng',
-        type: 'final',
+        always: {
+          actions: ['startQuery'],
+          target: 'idle',
+        },
       },
     },
   },
@@ -58,6 +60,8 @@ export const inputMachine = createMachine(
         type: `CHILD${DEFAULT_EVENT_DELIMITER}${name}${DEFAULT_EVENT_DELIMITER}${EVENTS.INPUT}`,
         input,
       })),
+
+      startQuery: sendParent('START_QUERY'),
     },
 
     guards: {

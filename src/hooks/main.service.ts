@@ -9,10 +9,10 @@ export const { sender, context, matches, subscribe, hasTag, send } =
         data: {},
         dropdowns: {
           country: {
-            default: 'select',
+            default: 'Select your place',
           },
           type: {
-            default: 'select',
+            default: 'Select your type',
           },
         },
         inputs: {
