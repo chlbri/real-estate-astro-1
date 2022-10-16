@@ -10,6 +10,7 @@ import { escalate } from 'xstate/lib/actions';
 export type QueryFilter = {
   country?: string;
   type?: string;
+  name?: string;
   inferiorOrEqualTo?: number;
   superiorOrEqualTo?: number;
 };
@@ -103,7 +104,7 @@ export const filterMachine = createMachine(
         return out;
       },
 
-      saveFiltered: async ({ filtered, ...filters }) => {
+      saveFiltered: async ({ filtered, name, noHydrate, ...filters }) => {
         const data: HydrationData = {
           ...filters,
           date: Date.now(),
