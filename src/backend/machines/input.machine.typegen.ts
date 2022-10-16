@@ -3,6 +3,7 @@
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
+    "": { type: "" };
     "xstate.after(THROTTLE_TIME)#(machine).idle": {
       type: "xstate.after(THROTTLE_TIME)#(machine).idle";
     };
@@ -19,13 +20,14 @@ export interface Typegen0 {
     input: "INPUT";
     resetEdititng: "xstate.after(THROTTLE_TIME)#(machine).idle";
     sendParentInput: "INPUT";
+    startQuery: "";
   };
   eventsCausingServices: {};
   eventsCausingGuards: {
     isEditing: "xstate.after(THROTTLE_TIME)#(machine).idle";
   };
   eventsCausingDelays: {
-    THROTTLE_TIME: "INPUT" | "xstate.init";
+    THROTTLE_TIME: "" | "INPUT" | "xstate.init";
   };
   matchesStates: "done" | "idle";
   tags: never;

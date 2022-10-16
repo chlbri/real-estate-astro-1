@@ -1,7 +1,7 @@
 import { MAIN_DATA, Property, PropertyType } from '@-backend/data/main';
 import { TIME_BETWEEN_REQUESTS } from '@-constants/numbers';
 import { EVENTS, MACHINES } from '@-constants/objects';
-import { ALL_OPTIONS } from '@-constants/strings';
+import { ALL_OPTIONS, LOCAL_STORAGE_ID } from '@-constants/strings';
 import { isBrowser } from '@-utils/environment';
 import { assign } from '@xstate/immer';
 import { createMachine } from 'xstate';
@@ -68,7 +68,8 @@ export type Events =
         | '__RINIT__'
         | 'RESET_INPUTS'
         | 'COUNTRY/TOGGLE'
-        | 'TYPE/TOGGLE';
+        | 'TYPE/TOGGLE'
+        | 'START_QUERY';
     }
   | {
       type: 'CHILD/COUNTRY/TOGGLE' | 'CHILD/TYPE/TOGGLE';
@@ -112,10 +113,17 @@ export const machine = createMachine(
     },
 
     on: {
-      __RINIT__: {
-        actions: ['resetCache', 'resetInputs'],
-        target: 'idle',
-      },
+      __RINIT__: [
+        {
+          cond: 'isBrowser',
+          actions: ['resetCache', 'resetInputs'],
+          target: 'rinit',
+        },
+        {
+          actions: ['resetCache', 'resetInputs'],
+          target: 'idle',
+        },
+      ],
     },
 
     initial: 'idle',
@@ -123,6 +131,13 @@ export const machine = createMachine(
     states: {
       idle: {
         always: 'starting',
+      },
+      rinit: {
+        invoke: {
+          src: 'resestLocalQuery',
+          onDone: { target: 'starting', actions: ['resetFiltered'] },
+          onError: { target: 'starting' },
+        },
       },
       starting: {
         invoke: {
@@ -191,7 +206,6 @@ export const machine = createMachine(
           // #endregion
 
           // #region Price
-
           'SUPERIOR_OR_EQUAL_TO/INPUT': {
             actions: ['sendInputSuperior'],
           },
@@ -205,136 +219,119 @@ export const machine = createMachine(
           'CHILD/INFERIOR_OR_EQUAL_TO/INPUT': {
             actions: ['assignInputInferior'],
           },
-
           // #endregion
+
+          // #region Query
+          START_QUERY: {
+            actions: ['concatValuesForQuery', 'sendQuery'],
+            target: '.querying',
+          },
 
           QUERY: {
             actions: ['forward'],
           },
+          // #endregion
         },
-        initial: 'idle',
+        type: 'parallel',
         states: {
-          idle: {
-            always: 'working',
-          },
-          working: {
+          ui: {
             type: 'parallel',
             states: {
-              ui: {
-                initial: 'idle',
+              dropdowns: {
+                type: 'parallel',
                 states: {
-                  idle: {
-                    type: 'parallel',
-                    states: {
-                      dropdowns: {
-                        type: 'parallel',
-                        states: {
-                          country: {
-                            invoke: {
-                              id: MACHINES.DROPDOWNS.COUNTRY,
-                              src: 'dropdownMachine',
-                              data: {
-                                name: MACHINES.DROPDOWNS.COUNTRY,
-                              },
-                              onDone: '#querying',
-                              onError: '#(machine)',
-                            },
-                          },
-                          type: {
-                            invoke: {
-                              id: MACHINES.DROPDOWNS.TYPE,
-                              src: 'dropdownMachine',
-                              data: {
-                                name: MACHINES.DROPDOWNS.TYPE,
-                              },
-                              onDone: '#querying',
-                              onError: '#(machine)',
-                            },
-                          },
-                        },
+                  country: {
+                    invoke: {
+                      id: MACHINES.DROPDOWNS.COUNTRY,
+                      src: 'dropdownMachine',
+                      data: {
+                        name: MACHINES.DROPDOWNS.COUNTRY,
                       },
-                      inputs: {
-                        type: 'parallel',
-                        states: {
-                          superiorOrEqualTo: {
-                            invoke: {
-                              id: MACHINES.INPUTS.PRICE
-                                .SUPERIOR_OR_EQUAL_TO,
-                              src: 'inputMachine',
-                              data: {
-                                name: MACHINES.INPUTS.PRICE
-                                  .SUPERIOR_OR_EQUAL_TO,
-                              },
-                              onDone: '#querying',
-                              onError: '#(machine)',
-                            },
-                          },
-                          inferiorOrEqualTo: {
-                            invoke: {
-                              id: MACHINES.INPUTS.PRICE
-                                .INFERIOR_OR_EQUAL_TO,
-                              src: 'inputMachine',
-                              data: {
-                                name: MACHINES.INPUTS.PRICE
-                                  .INFERIOR_OR_EQUAL_TO,
-                              },
-                              onDone: '#querying',
-                              onError: '#(machine)',
-                            },
-                          },
-                        },
-                      },
+                      onError: '#(machine)',
                     },
                   },
-                  querying: {
-                    id: 'querying',
-                    entry: ['concatValuesForQuery', 'sendQuery'],
+                  type: {
+                    invoke: {
+                      id: MACHINES.DROPDOWNS.TYPE,
+                      src: 'dropdownMachine',
+                      data: {
+                        name: MACHINES.DROPDOWNS.TYPE,
+                      },
+                      onError: '#(machine)',
+                    },
                   },
                 },
               },
-              querying: {
-                initial: 'building',
+              inputs: {
+                type: 'parallel',
                 states: {
-                  building: {
-                    entry: ['resetQuery'],
+                  superiorOrEqualTo: {
                     invoke: {
-                      id: 'queryBuilderMachine',
-                      src: 'queryBuilderMachine',
-                      data: (context) => {
-                        const previousQuery =
-                          context.ui.data.previousQuery;
-                        const currentQuery = context.ui.data.previousQuery;
-                        const date = context.cache.lastQueryDate;
-                        return {
-                          previousQuery,
-                          currentQuery,
-                          date,
-                        };
-                      },
-                      onDone: {
-                        actions: ['buildQuery'],
-                        target: 'filtering',
+                      id: MACHINES.INPUTS.PRICE.SUPERIOR_OR_EQUAL_TO,
+                      src: 'inputMachine',
+                      data: {
+                        name: MACHINES.INPUTS.PRICE.SUPERIOR_OR_EQUAL_TO,
                       },
                       onError: '#(machine)',
                     },
                   },
-                  filtering: {
-                    tags: ['busy'],
+                  inferiorOrEqualTo: {
                     invoke: {
-                      src: 'filterMachine',
-                      data: (context) => {
-                        return {
-                          name: 'ALL',
-                          ...context.cache.query,
-                        };
-                      },
-                      onDone: {
-                        actions: ['filter'],
-                        target: '#working',
+                      id: MACHINES.INPUTS.PRICE.INFERIOR_OR_EQUAL_TO,
+                      src: 'inputMachine',
+                      data: {
+                        name: MACHINES.INPUTS.PRICE.INFERIOR_OR_EQUAL_TO,
                       },
                       onError: '#(machine)',
                     },
                   },
+                },
+              },
+            },
+          },
+          querying: {
+            initial: 'idle',
+            states: {
+              idle: {
+                entry: ['resetQuery'],
+                always: 'building',
+              },
+              building: {
+                invoke: {
+                  id: 'queryBuilderMachine',
+                  src: 'queryBuilderMachine',
+                  data: (context) => {
+                    const previousQuery = context.ui.data.previousQuery;
+                    const currentQuery = context.ui.data.previousQuery;
+                    const date = context.cache.lastQueryDate;
+                    return {
+                      previousQuery,
+                      currentQuery,
+                      date,
+                    };
+                  },
+                  onDone: {
+                    actions: ['buildQuery'],
+                    target: 'filtering',
+                  },
+                  onError: '#(machine)',
+                },
+              },
+              filtering: {
+                tags: ['busy'],
+                invoke: {
+                  src: 'filterMachine',
+                  data: (context) => {
+                    return {
+                      name: 'ALL',
+                      ...context.cache.query,
+                    };
+                  },
+                  onDone: {
+                    actions: ['filter'],
+                    target: 'idle',
+                  },
+                  onError: '#(machine)',
                 },
               },
             },
@@ -348,6 +345,10 @@ export const machine = createMachine(
       // #region Begining
       resetCache: assign((context) => {
         context.cache = {};
+      }),
+
+      resetFiltered: assign((context) => {
+        context.ui.data.filtered = undefined;
       }),
 
       resetInputs: assign((context) => {
@@ -367,8 +368,6 @@ export const machine = createMachine(
       }),
 
       hydrate: assign((context, { data }) => {
-        console.log('data =>', data);
-
         context.ui.data.filtered = data?.filtered;
         context.ui.dropdowns.country.current = data?.currentQuery.country;
         context.ui.dropdowns.type.current = data?.currentQuery.type;
@@ -505,6 +504,10 @@ export const machine = createMachine(
         const countries = new Set(MAIN_DATA.map((data) => data.country));
         countries.add(ALL_OPTIONS);
         return { types, countries };
+      },
+
+      resestLocalQuery: async () => {
+        localStorage.removeItem(LOCAL_STORAGE_ID);
       },
     },
 

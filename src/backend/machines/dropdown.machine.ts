@@ -1,4 +1,3 @@
-import { THROTTLE_TIME } from '@-constants/numbers';
 import { EVENTS } from '@-constants/objects';
 import { DEFAULT_EVENT_DELIMITER } from '@-constants/strings';
 import { assign } from '@xstate/immer';
@@ -13,13 +12,13 @@ export type Context = {
 
 export type Events =
   | { type: 'INPUT' | 'CHILD/INPUT/INPUT'; input?: string }
-  | { type: 'TOGGLE' };
+  | { type: 'TOGGLE' | 'START_QUERY' };
 
 export const dropdownMachine = createMachine(
   {
     predictableActionArguments: true,
     preserveActionOrder: true,
-    tsTypes: {} as import('./dropDown.machine.typegen').Typegen0,
+    tsTypes: {} as import('./dropdown.machine.typegen').Typegen0,
     schema: {
       context: {} as Context,
       events: {} as Events,
@@ -46,14 +45,17 @@ export const dropdownMachine = createMachine(
           data: () => ({
             name: EVENTS.INPUT,
           }),
-          onDone: 'done',
         },
         on: {
           'CHILD/INPUT/INPUT': { actions: ['sendParentInput'] },
+          START_QUERY: { target: 'done' },
         },
       },
       done: {
-        type: 'final',
+        always: {
+          actions: ['startQuery'],
+          target: 'idle',
+        },
       },
     },
   },
@@ -71,6 +73,8 @@ export const dropdownMachine = createMachine(
         input,
       })),
 
+      startQuery: sendParent('START_QUERY'),
+
       toggle: assign((context) => {
         context.open = !context.open;
       }),
@@ -79,7 +83,5 @@ export const dropdownMachine = createMachine(
     services: {
       inputMachine,
     },
-
-    delays: { THROTTLE_TIME },
   }
 );

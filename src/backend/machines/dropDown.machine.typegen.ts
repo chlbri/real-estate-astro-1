@@ -3,6 +3,7 @@
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
+    "": { type: "" };
     "done.invoke.inputMachine": {
       type: "done.invoke.inputMachine";
       data: unknown;
@@ -27,10 +28,11 @@ export interface Typegen0 {
     input: "INPUT";
     sendParentInput: "CHILD/INPUT/INPUT";
     sendParentToggle: "TOGGLE";
+    startQuery: "";
     toggle: "TOGGLE";
   };
   eventsCausingServices: {
-    inputMachine: "xstate.init";
+    inputMachine: "" | "xstate.init";
   };
   eventsCausingGuards: {};
   eventsCausingDelays: {};

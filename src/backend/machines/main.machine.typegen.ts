@@ -9,33 +9,18 @@ export interface Typegen0 {
       data: unknown;
       __tip: "See the XState TS docs to learn how to strongly type this.";
     };
+    "done.invoke.(machine).rinit:invocation[0]": {
+      type: "done.invoke.(machine).rinit:invocation[0]";
+      data: unknown;
+      __tip: "See the XState TS docs to learn how to strongly type this.";
+    };
     "done.invoke.(machine).starting:invocation[0]": {
       type: "done.invoke.(machine).starting:invocation[0]";
       data: unknown;
       __tip: "See the XState TS docs to learn how to strongly type this.";
     };
-    "done.invoke.(machine).working.working.querying.filtering:invocation[0]": {
-      type: "done.invoke.(machine).working.working.querying.filtering:invocation[0]";
-      data: unknown;
-      __tip: "See the XState TS docs to learn how to strongly type this.";
-    };
-    "done.invoke.(machine).working.working.ui.idle.dropdowns.country:invocation[0]": {
-      type: "done.invoke.(machine).working.working.ui.idle.dropdowns.country:invocation[0]";
-      data: unknown;
-      __tip: "See the XState TS docs to learn how to strongly type this.";
-    };
-    "done.invoke.(machine).working.working.ui.idle.dropdowns.type:invocation[0]": {
-      type: "done.invoke.(machine).working.working.ui.idle.dropdowns.type:invocation[0]";
-      data: unknown;
-      __tip: "See the XState TS docs to learn how to strongly type this.";
-    };
-    "done.invoke.(machine).working.working.ui.idle.inputs.inferiorOrEqualTo:invocation[0]": {
-      type: "done.invoke.(machine).working.working.ui.idle.inputs.inferiorOrEqualTo:invocation[0]";
-      data: unknown;
-      __tip: "See the XState TS docs to learn how to strongly type this.";
-    };
-    "done.invoke.(machine).working.working.ui.idle.inputs.superiorOrEqualTo:invocation[0]": {
-      type: "done.invoke.(machine).working.working.ui.idle.inputs.superiorOrEqualTo:invocation[0]";
+    "done.invoke.(machine).working.querying.filtering:invocation[0]": {
+      type: "done.invoke.(machine).working.querying.filtering:invocation[0]";
       data: unknown;
       __tip: "See the XState TS docs to learn how to strongly type this.";
     };
@@ -43,6 +28,14 @@ export interface Typegen0 {
       type: "done.invoke.queryBuilderMachine";
       data: unknown;
       __tip: "See the XState TS docs to learn how to strongly type this.";
+    };
+    "error.platform.(machine).hydration:invocation[0]": {
+      type: "error.platform.(machine).hydration:invocation[0]";
+      data: unknown;
+    };
+    "error.platform.(machine).rinit:invocation[0]": {
+      type: "error.platform.(machine).rinit:invocation[0]";
+      data: unknown;
     };
     "error.platform.queryBuilderMachine": {
       type: "error.platform.queryBuilderMachine";
@@ -55,15 +48,16 @@ export interface Typegen0 {
   };
   invokeSrcNameMap: {
     dropdownMachine:
-      | "done.invoke.(machine).working.working.ui.idle.dropdowns.country:invocation[0]"
-      | "done.invoke.(machine).working.working.ui.idle.dropdowns.type:invocation[0]";
-    filterMachine: "done.invoke.(machine).working.working.querying.filtering:invocation[0]";
+      | "done.invoke.(machine).working.ui.dropdowns.country:invocation[0]"
+      | "done.invoke.(machine).working.ui.dropdowns.type:invocation[0]";
+    filterMachine: "done.invoke.(machine).working.querying.filtering:invocation[0]";
     generateLists: "done.invoke.(machine).starting:invocation[0]";
     hydrationMachine: "done.invoke.(machine).hydration:invocation[0]";
     inputMachine:
-      | "done.invoke.(machine).working.working.ui.idle.inputs.superiorOrEqualTo:invocation[0]"
-      | "done.invoke.(machine).working.working.ui.idle.inputs.inferiorOrEqualTo:invocation[0]";
+      | "done.invoke.(machine).working.ui.inputs.superiorOrEqualTo:invocation[0]"
+      | "done.invoke.(machine).working.ui.inputs.inferiorOrEqualTo:invocation[0]";
     queryBuilderMachine: "done.invoke.queryBuilderMachine";
+    resestLocalQuery: "done.invoke.(machine).rinit:invocation[0]";
   };
   missingImplementations: {
     actions: never;
@@ -77,42 +71,50 @@ export interface Typegen0 {
     assignInputSuperior: "CHILD/SUPERIOR_OR_EQUAL_TO/INPUT";
     assignInputType: "CHILD/TYPE/INPUT";
     buildQuery: "done.invoke.queryBuilderMachine";
-    concatValuesForQuery:
-      | "done.invoke.(machine).working.working.ui.idle.dropdowns.country:invocation[0]"
-      | "done.invoke.(machine).working.working.ui.idle.dropdowns.type:invocation[0]"
-      | "done.invoke.(machine).working.working.ui.idle.inputs.inferiorOrEqualTo:invocation[0]"
-      | "done.invoke.(machine).working.working.ui.idle.inputs.superiorOrEqualTo:invocation[0]";
-    filter: "done.invoke.(machine).working.working.querying.filtering:invocation[0]";
+    concatValuesForQuery: "START_QUERY";
+    filter: "done.invoke.(machine).working.querying.filtering:invocation[0]";
     forward: "QUERY";
     generateLists: "done.invoke.(machine).starting:invocation[0]";
     hydrate: "done.invoke.(machine).hydration:invocation[0]";
     resetCache: "__RINIT__";
+    resetFiltered: "done.invoke.(machine).rinit:invocation[0]";
     resetInputs: "__RINIT__" | "done.invoke.(machine).starting:invocation[0]";
-    resetQuery: "";
+    resetQuery:
+      | "START_QUERY"
+      | "done.invoke.(machine).hydration:invocation[0]"
+      | "done.invoke.(machine).starting:invocation[0]"
+      | "done.invoke.(machine).working.querying.filtering:invocation[0]"
+      | "error.platform.(machine).hydration:invocation[0]";
     sendInputCountry: "COUNTRY/INPUT";
     sendInputInferior: "INFERIOR_OR_EQUAL_TO/INPUT";
     sendInputSuperior: "SUPERIOR_OR_EQUAL_TO/INPUT";
     sendInputType: "TYPE/INPUT";
-    sendQuery:
-      | "done.invoke.(machine).working.working.ui.idle.dropdowns.country:invocation[0]"
-      | "done.invoke.(machine).working.working.ui.idle.dropdowns.type:invocation[0]"
-      | "done.invoke.(machine).working.working.ui.idle.inputs.inferiorOrEqualTo:invocation[0]"
-      | "done.invoke.(machine).working.working.ui.idle.inputs.superiorOrEqualTo:invocation[0]";
+    sendQuery: "START_QUERY";
     sendToggleCountry: "COUNTRY/TOGGLE";
     sendToggleType: "TYPE/TOGGLE";
     toggleCountry: "CHILD/COUNTRY/TOGGLE";
     toggleType: "CHILD/TYPE/TOGGLE";
   };
   eventsCausingServices: {
-    dropdownMachine: "";
+    dropdownMachine:
+      | "done.invoke.(machine).hydration:invocation[0]"
+      | "done.invoke.(machine).starting:invocation[0]"
+      | "error.platform.(machine).hydration:invocation[0]";
     filterMachine: "done.invoke.queryBuilderMachine";
-    generateLists: "";
+    generateLists:
+      | ""
+      | "done.invoke.(machine).rinit:invocation[0]"
+      | "error.platform.(machine).rinit:invocation[0]";
     hydrationMachine: "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).waiting";
-    inputMachine: "";
+    inputMachine:
+      | "done.invoke.(machine).hydration:invocation[0]"
+      | "done.invoke.(machine).starting:invocation[0]"
+      | "error.platform.(machine).hydration:invocation[0]";
     queryBuilderMachine: "";
+    resestLocalQuery: "__RINIT__";
   };
   eventsCausingGuards: {
-    isBrowser: "done.invoke.(machine).starting:invocation[0]";
+    isBrowser: "__RINIT__" | "done.invoke.(machine).starting:invocation[0]";
   };
   eventsCausingDelays: {
     TIME_BETWEEN_REQUESTS: "done.invoke.(machine).starting:invocation[0]";
@@ -120,47 +122,33 @@ export interface Typegen0 {
   matchesStates:
     | "hydration"
     | "idle"
+    | "rinit"
     | "starting"
     | "waiting"
     | "working"
-    | "working.idle"
-    | "working.working"
-    | "working.working.querying"
-    | "working.working.querying.building"
-    | "working.working.querying.filtering"
-    | "working.working.ui"
-    | "working.working.ui.idle"
-    | "working.working.ui.idle.dropdowns"
-    | "working.working.ui.idle.dropdowns.country"
-    | "working.working.ui.idle.dropdowns.type"
-    | "working.working.ui.idle.inputs"
-    | "working.working.ui.idle.inputs.inferiorOrEqualTo"
-    | "working.working.ui.idle.inputs.superiorOrEqualTo"
-    | "working.working.ui.querying"
+    | "working.querying"
+    | "working.querying.building"
+    | "working.querying.filtering"
+    | "working.querying.idle"
+    | "working.ui"
+    | "working.ui.dropdowns"
+    | "working.ui.dropdowns.country"
+    | "working.ui.dropdowns.type"
+    | "working.ui.inputs"
+    | "working.ui.inputs.inferiorOrEqualTo"
+    | "working.ui.inputs.superiorOrEqualTo"
     | {
         working?:
-          | "idle"
-          | "working"
+          | "querying"
+          | "ui"
           | {
-              working?:
-                | "querying"
-                | "ui"
+              querying?: "building" | "filtering" | "idle";
+              ui?:
+                | "dropdowns"
+                | "inputs"
                 | {
-                    querying?: "building" | "filtering";
-                    ui?:
-                      | "idle"
-                      | "querying"
-                      | {
-                          idle?:
-                            | "dropdowns"
-                            | "inputs"
-                            | {
-                                dropdowns?: "country" | "type";
-                                inputs?:
-                                  | "inferiorOrEqualTo"
-                                  | "superiorOrEqualTo";
-                              };
-                        };
+                    dropdowns?: "country" | "type";
+                    inputs?: "inferiorOrEqualTo" | "superiorOrEqualTo";
                   };
             };
       };

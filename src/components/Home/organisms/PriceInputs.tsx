@@ -18,7 +18,7 @@ type Props = {};
 
 export const PriceInputs: Component<Props> = ({}) => {
   return (
-    <div class='flex space-x-6 lg:flex-col lg:space-x-0 lg:space-y-6 xl:flex-row xl:space-y-0 xl:space-x-6 '>
+    <div class='flex flex-col space-y-6 md:flex-row md:space-x-6 md:space-y-0 lg:flex-col lg:space-x-0 lg:space-y-6 xl:flex-row xl:space-y-0 xl:space-x-6 '>
       <InputRange
         setValue={setPriceSuperiorOrEqual}
         id={superiorOrEqualToID}
