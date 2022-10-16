@@ -1,7 +1,6 @@
 /** @jsxImportSource solid-js */
 
 import { HomeIcon } from '@-components/shared/atoms/icons/Home';
-import { getLabel } from '@-hooks/helpers/getLabel';
 import type { Component } from 'solid-js';
 import { ArrowToggle } from '../molecules/ArrowToggle';
 import {
@@ -39,7 +38,7 @@ export const DropdownType: Component<Props> = ({}) => {
             class='cursor-pointer transition hover:text-violet-500'
             onclick={() => {
               toggle();
-              filter({ propertyType });
+              filter(propertyType);
             }}
             classList={{
               'text-violet-900': isCurrent(propertyType),

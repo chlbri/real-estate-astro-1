@@ -9,15 +9,17 @@ type Props = {};
 
 export const Properties: Component<Props> = ({}) => {
   return (
-    <div class='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 w-full gap-6 mt-10'>
+    <div class='relative min-h-[2500px] md:min-h-[2000px] lg:min-h-[1500px] 2xl:min-h-[1000px]'>
       {isBusy() && (
-        <div class='w-full h-96 flex items-center justify-center'>
-          <Spinner />
+        <div class='absolute inset-0 pt-60 flex justify-center opacity-50 -z-20'>
+          <Spinner size={200} />
         </div>
       )}
-      <For each={getFilteredData()}>
-        {(property) => <Property {...{ property }} />}
-      </For>
+      <div class='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 w-full gap-6 mt-10 px-6'>
+        <For each={getFilteredData().slice(0, 20)}>
+          {(property) => <Property {...{ property }} />}
+        </For>
+      </div>
     </div>
   );
 };

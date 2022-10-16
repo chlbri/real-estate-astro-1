@@ -26,5 +26,6 @@ export const MACHINES = {
 
 export const EVENTS = {
   TOGGLE: 'TOGGLE',
-  VALUE: 'VALUE',
+  INPUT: 'INPUT',
+  FILTER: 'FILTER',
 } as const;

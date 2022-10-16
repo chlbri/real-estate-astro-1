@@ -1,4 +1,4 @@
-import { context, sender } from 'src/hooks/main.service';
+import { context, send, sender } from '@-hooks/main.service';
 
 export const getTypes = context((context) => {
   const types = context.cache.types ?? [];
@@ -15,9 +15,11 @@ export function isCurrent(type?: string) {
 }
 
 export const canBeOpened = context(
-  (context) => context.ui.dropdowns.type.open
+  (context) => !!context.ui.dropdowns.type.open
 );
 
-export const filter = sender('FILTER_BY_TYPE');
+export function filter(input?: string) {
+  return send({ type: 'TYPE/INPUT', input });
+}
 
-export const toggle = sender('TOGGLE_DROPDOWN_TYPE');
+export const toggle = sender('TYPE/TOGGLE');

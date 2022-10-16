@@ -1,69 +1,58 @@
-import {
-  INTERVAL_RETURN,
-  INTERVAL_SWITCH,
-  THROTTLE_TIME,
-  TIME_BETWEEN_REQUESTS,
-} from '@-constants/numbers';
-import {
-  ALL_OPTIONS,
-  inferiorOrEqualToID,
-  LOCAL_STORAGE_ID,
-  superiorOrEqualToID,
-} from '@-constants/strings';
+import { MAIN_DATA, Property, PropertyType } from '@-backend/data/main';
+import { TIME_BETWEEN_REQUESTS } from '@-constants/numbers';
+import { EVENTS, MACHINES } from '@-constants/objects';
+import { ALL_OPTIONS } from '@-constants/strings';
 import { isBrowser } from '@-utils/environment';
 import { assign } from '@xstate/immer';
-import { createMachine, EventFrom, StateFrom } from 'xstate';
-import { MAIN_DATA, Property, PropertyType } from '../data/main';
-import { filterMachine } from './filter.machine';
+import { createMachine } from 'xstate';
+import { forwardTo, send } from 'xstate/lib/actions';
+import { dropdownMachine } from './dropdown.machine';
+import { filterMachine, QueryFilter } from './filter.machine';
+import { hydrationMachine } from './hydration.machine';
+import { inputMachine } from './input.machine';
+import { BeforeQuery, queryBuilderMachine } from './queryBuilder.machine';
+
+type HydrationData = {
+  filtered?: Property[];
+  currentQuery: BeforeQuery;
+};
 
 export type Context = {
   cache: {
     countries?: Set<string>;
     types?: Set<PropertyType>;
-    query?: {
-      country?: string;
-      type?: string;
-      inferiorOrEqualTo?: number;
-      superiorOrEqualTo?: number;
-    };
-    //TODO: To implement a invalidating system
-    prevQuery?: {
-      country?: string;
-      type?: string;
-      inferiorOrEqualTo?: number;
-      superiorOrEqualTo?: number;
-      date?: number;
-    };
+    query?: QueryFilter;
+    lastQueryDate?: number;
   };
   ui: {
     dropdowns: {
       country: {
-        editing: boolean;
         current?: string;
-        open: boolean;
+        open?: boolean;
         default: string;
       };
       type: {
-        editing: boolean;
         current?: string;
-        open: boolean;
+        open?: boolean;
         default: string;
       };
     };
     inputs: {
       price: {
         inferiorOrEqualTo: {
-          editing: boolean;
           current?: string;
+          default: string;
         };
         superiorOrEqualTo: {
-          editing: boolean;
           current?: string;
+          default: string;
         };
       };
     };
     data: {
       filtered?: Property[];
+      currentQuery?: BeforeQuery;
+      previousQuery?: BeforeQuery;
     };
     timeouts: {
       inferiorFocusInterval?: ReturnType<typeof setTimeout>;
@@ -72,92 +61,34 @@ export type Context = {
   };
 };
 
+// #region Events
 export type Events =
-  | { type: '__RINIT__' }
-  | { type: 'RESET_INPUTS' }
-  | { type: 'SET_PRICE_INFERIOR'; value?: string }
-  | { type: 'SET_PRICE_SUPERIOR'; value?: string }
-  | { type: 'TOGGLE_DROPDOWN_COUNTRY' }
-  | { type: 'TOGGLE_DROPDOWN_TYPE' }
-  | { type: 'FILTER_BY_COUNTRY'; country?: string }
-  | { type: 'FILTER_BY_TYPE'; propertyType?: PropertyType };
+  | {
+      type:
+        | '__RINIT__'
+        | 'RESET_INPUTS'
+        | 'COUNTRY/TOGGLE'
+        | 'TYPE/TOGGLE';
+    }
+  | {
+      type: 'CHILD/COUNTRY/TOGGLE' | 'CHILD/TYPE/TOGGLE';
+      open?: boolean;
+    }
+  | { type: 'QUERY'; query?: BeforeQuery }
+  | {
+      type:
+        | 'COUNTRY/INPUT'
+        | 'CHILD/COUNTRY/INPUT'
+        | 'TYPE/INPUT'
+        | 'CHILD/TYPE/INPUT'
+        | 'SUPERIOR_OR_EQUAL_TO/INPUT'
+        | 'CHILD/SUPERIOR_OR_EQUAL_TO/INPUT'
+        | 'INFERIOR_OR_EQUAL_TO/INPUT'
+        | 'CHILD/INFERIOR_OR_EQUAL_TO/INPUT';
 
-export type HydrationData = {
-  filtered?: Property[];
-  filters?: {
-    inferiorOrEqualTo?: string;
-    superiorOrEqualTo?: string;
-    country?: string;
-    type?: string;
-  };
-};
-
-export const intialContext: Context = {
-  cache: {},
-  ui: {
-    dropdowns: {
-      country: {
-        editing: false,
-        open: false,
-        default: 'Select yout place',
-      },
-      type: {
-        editing: false,
-        open: false,
-        default: 'Select type',
-      },
-    },
-    inputs: {
-      price: {
-        inferiorOrEqualTo: {
-          editing: false,
-        },
-        superiorOrEqualTo: {
-          editing: false,
-        },
-      },
-    },
-    data: {},
-    timeouts: {},
-  },
-};
-
-const commonStates = {
-  filtering: {
-    tags: ['busy'],
-    entry: ['buildQuery'],
-    invoke: {
-      src: 'filterMachine',
-
-      onDone: [
-        {
-          actions: ['filter'],
-          target: 'hydration',
-          cond: 'isBrowser',
-        },
-        {
-          actions: ['filter'],
-          target: 'busy',
-        },
-      ],
-      onError: 'filter',
-    },
-  },
-  hydration: {
-    tags: ['busy'],
-    invoke: {
-      src: 'saveFiltered',
-      onDone: 'busy',
-      onError: 'filter',
-    },
-  },
-  busy: {
-    tags: ['busy'],
-    after: {
-      TIME_BETWEEN_REQUESTS: 'filter',
-    },
-  },
-};
+      input?: string;
+    };
+// #endregion
 
 export const machine = createMachine(
   {
@@ -172,11 +103,13 @@ export const machine = createMachine(
           data: { types?: Set<PropertyType>; countries?: Set<string> };
         };
         saveFiltered: { data: void };
-        hydrateResearch: { data: HydrationData | undefined };
-        filterMachine: { data: Property[] };
+        hydrationMachine: { data: HydrationData | undefined };
+        filterMachine: { data: Property[] | undefined };
+        dropdownMachine: { data: void };
+        inputMachine: { data: void };
+        queryBuilderMachine: { data: QueryFilter | undefined };
       },
     },
-    context: intialContext,
 
     on: {
       __RINIT__: {
@@ -186,11 +119,10 @@ export const machine = createMachine(
     },
 
     initial: 'idle',
+
     states: {
       idle: {
-        always: {
-          target: 'starting',
-        },
+        always: 'starting',
       },
       starting: {
         invoke: {
@@ -217,225 +149,190 @@ export const machine = createMachine(
       hydration: {
         tags: ['busy'],
         invoke: {
-          src: 'hydrateResearch',
-          onDone: [
-            {
-              target: 'working',
-              actions: ['hydrateResearch'],
-            },
-          ],
+          src: 'hydrationMachine',
+          onDone: {
+            target: 'working',
+            actions: ['hydrate'],
+          },
+          onError: 'working',
         },
       },
-
       working: {
-        type: 'parallel',
+        id: 'working',
         on: {
-          RESET_INPUTS: {
-            actions: ['resetInputs'],
+          // #region Country
+          'COUNTRY/INPUT': {
+            actions: ['sendInputCountry'],
+          },
+          'CHILD/COUNTRY/INPUT': {
+            actions: ['assignInputCountry'],
+          },
+          'COUNTRY/TOGGLE': {
+            actions: ['sendToggleCountry'],
+          },
+          'CHILD/COUNTRY/TOGGLE': {
+            actions: ['toggleCountry'],
+          },
+          // #endregion
+
+          // #region Type
+          'TYPE/INPUT': {
+            actions: ['sendInputType'],
+          },
+          'CHILD/TYPE/INPUT': {
+            actions: ['assignInputType'],
+          },
+          'TYPE/TOGGLE': {
+            actions: ['sendToggleType'],
+          },
+          'CHILD/TYPE/TOGGLE': {
+            actions: ['toggleType'],
+          },
+          // #endregion
+
+          // #region Price
+
+          'SUPERIOR_OR_EQUAL_TO/INPUT': {
+            actions: ['sendInputSuperior'],
+          },
+          'CHILD/SUPERIOR_OR_EQUAL_TO/INPUT': {
+            actions: ['assignInputSuperior'],
+          },
+
+          'INFERIOR_OR_EQUAL_TO/INPUT': {
+            actions: ['sendInputInferior'],
+          },
+          'CHILD/INFERIOR_OR_EQUAL_TO/INPUT': {
+            actions: ['assignInputInferior'],
+          },
+
+          // #endregion
+
+          QUERY: {
+            actions: ['forward'],
           },
         },
+        initial: 'idle',
         states: {
-          dropdowns: {
-            type: 'parallel',
-            states: {
-              country: {
-                initial: 'filter',
-                on: {
-                  FILTER_BY_COUNTRY: {
-                    actions: ['assignFilterCountry'],
-                    target: '.filter',
-                    internal: false,
-                  },
-                  TOGGLE_DROPDOWN_COUNTRY: {
-                    actions: ['toggleCountryDropdown'],
-                  },
-                },
-                states: {
-                  filter: {
-                    after: {
-                      THROTTLE_TIME: {
-                        cond: 'isCountryEditing',
-                        target: 'filtering',
-                      },
-                    },
-                  },
-                  filtering: {
-                    entry: ['resetFilterCountry', 'buildQuery'],
-                    invoke: {
-                      src: 'filterMachine',
-                      data: (context) => {
-                        return {
-                          name: 'COUNTRY',
-                          ...context.cache.query,
-                        };
-                      },
-                      onDone: {
-                        actions: ['filter'],
-                        target: 'filter',
-                      },
-                      onError: 'filter',
-                    },
-                  },
-                },
-              },
-              type: {
-                initial: 'filter',
-                on: {
-                  FILTER_BY_TYPE: {
-                    actions: ['assignFilterType'],
-                    target: '.filter',
-                    internal: false,
-                  },
-                  TOGGLE_DROPDOWN_TYPE: {
-                    actions: ['toggleTypeDropdown'],
-                  },
-                },
-                states: {
-                  filter: {
-                    after: {
-                      THROTTLE_TIME: {
-                        cond: 'isTypeEditing',
-                        target: 'filtering',
-                      },
-                    },
-                  },
-                  filtering: {
-                    entry: ['resetFilterType', 'buildQuery'],
-                    invoke: {
-                      src: 'filterMachine',
-                      data: (context) => {
-                        return {
-                          name: 'TYPE',
-                          ...context.cache.query,
-                        };
-                      },
-                      onDone: {
-                        actions: ['filter'],
-                        target: 'filter',
-                      },
-                      onError: 'filter',
-                    },
-                  },
-                },
-              },
-            },
+          idle: {
+            always: 'working',
           },
-          inputs: {
+          working: {
             type: 'parallel',
             states: {
-              price: {
-                type: 'parallel',
+              ui: {
+                initial: 'idle',
                 states: {
-                  inferiorTo: {
-                    id: 'inferiorTo',
-                    initial: 'filter',
+                  idle: {
+                    type: 'parallel',
                     states: {
-                      filter: {
-                        on: {
-                          SET_PRICE_INFERIOR: {
-                            target: 'filter',
-                            cond: 'isInputNumber',
-                            actions: ['setPriceInferior', 'clearTimeouts'],
+                      dropdowns: {
+                        type: 'parallel',
+                        states: {
+                          country: {
+                            invoke: {
+                              id: MACHINES.DROPDOWNS.COUNTRY,
+                              src: 'dropdownMachine',
+                              data: {
+                                name: MACHINES.DROPDOWNS.COUNTRY,
+                              },
+                              onDone: '#querying',
+                              onError: '#(machine)',
+                            },
                           },
-                        },
-                        after: {
-                          THROTTLE_TIME: {
-                            cond: 'isInferiorOrEqualEditing',
-                            target: 'checking',
+                          type: {
+                            invoke: {
+                              id: MACHINES.DROPDOWNS.TYPE,
+                              src: 'dropdownMachine',
+                              data: {
+                                name: MACHINES.DROPDOWNS.TYPE,
+                              },
+                              onDone: '#querying',
+                              onError: '#(machine)',
+                            },
                           },
                         },
                       },
-                      checking: {
-                        exit: [
-                          'resetFilterSuperiorOrEqualTo',
-                          'resetFilterInferiorOrEqualTo',
-                        ],
-                        always: [
-                          {
-                            cond: 'inferiorAndSuperiorAreSet',
-                            target: 'filtering',
+                      inputs: {
+                        type: 'parallel',
+                        states: {
+                          superiorOrEqualTo: {
+                            invoke: {
+                              id: MACHINES.INPUTS.PRICE
+                                .SUPERIOR_OR_EQUAL_TO,
+                              src: 'inputMachine',
+                              data: {
+                                name: MACHINES.INPUTS.PRICE
+                                  .SUPERIOR_OR_EQUAL_TO,
+                              },
+                              onDone: '#querying',
+                              onError: '#(machine)',
+                            },
                           },
-                          {
-                            target: 'filter',
-                            cond: 'isBrowser',
-                            actions: ['focusSuperiorOrEqualTo'],
+                          inferiorOrEqualTo: {
+                            invoke: {
+                              id: MACHINES.INPUTS.PRICE
+                                .INFERIOR_OR_EQUAL_TO,
+                              src: 'inputMachine',
+                              data: {
+                                name: MACHINES.INPUTS.PRICE
+                                  .INFERIOR_OR_EQUAL_TO,
+                              },
+                              onDone: '#querying',
+                              onError: '#(machine)',
+                            },
                           },
-                          'filter',
-                        ],
-                      },
-                      filtering: {
-                        entry: ['buildQuery'],
-                        invoke: {
-                          src: 'filterMachine',
-                          data: (context) => {
-                            return {
-                              name: 'INFERIOR',
-                              ...context.cache.query,
-                            };
-                          },
-                          onDone: {
-                            actions: ['filter'],
-                            target: 'filter',
-                          },
-                          onError: 'filter',
                         },
                       },
                     },
                   },
-                  superiorTo: {
-                    id: 'superiorTo',
-                    initial: 'filter',
-                    states: {
-                      filter: {
-                        on: {
-                          SET_PRICE_SUPERIOR: {
-                            target: 'filter',
-                            cond: 'isInputNumber',
-                            actions: ['setPriceSuperior', 'clearTimeouts'],
-                          },
-                        },
-                        after: {
-                          THROTTLE_TIME: {
-                            cond: 'isSuperiorOrEqualEditing',
-                            target: 'checking',
-                          },
-                        },
+                  querying: {
+                    id: 'querying',
+                    entry: ['concatValuesForQuery', 'sendQuery'],
+                  },
+                },
+              },
+              querying: {
+                initial: 'building',
+                states: {
+                  building: {
+                    entry: ['resetQuery'],
+                    invoke: {
+                      id: 'queryBuilderMachine',
+                      src: 'queryBuilderMachine',
+                      data: (context) => {
+                        const previousQuery =
+                          context.ui.data.previousQuery;
+                        const currentQuery = context.ui.data.previousQuery;
+                        const date = context.cache.lastQueryDate;
+                        return {
+                          previousQuery,
+                          currentQuery,
+                          date,
+                        };
                       },
-                      checking: {
-                        exit: [
-                          'resetFilterSuperiorOrEqualTo',
-                          'resetFilterInferiorOrEqualTo',
-                        ],
-                        always: [
-                          {
-                            cond: 'inferiorAndSuperiorAreSet',
-                            target: 'filtering',
-                          },
-                          {
-                            target: 'filter',
-                            cond: 'isBrowser',
-                            actions: ['focusInferiorOrEqualTo'],
-                          },
-                          'filter',
-                        ],
+                      onDone: {
+                        actions: ['buildQuery'],
+                        target: 'filtering',
                       },
-                      filtering: {
-                        entry: ['buildQuery'],
-                        invoke: {
-                          src: 'filterMachine',
-                          data: (context) => {
-                            return {
-                              name: 'SUPERIOR',
-                              ...context.cache.query,
-                            };
-                          },
-                          onDone: {
-                            actions: ['filter'],
-                            target: 'filter',
-                          },
-                          onError: 'filter',
-                        },
+                      onError: '#(machine)',
+                    },
+                  },
+                  filtering: {
+                    tags: ['busy'],
+                    invoke: {
+                      src: 'filterMachine',
+                      data: (context) => {
+                        return {
+                          name: 'ALL',
+                          ...context.cache.query,
+                        };
                       },
+                      onDone: {
+                        actions: ['filter'],
+                        target: '#working',
+                      },
+                      onError: '#(machine)',
                     },
                   },
                 },
@@ -448,19 +345,20 @@ export const machine = createMachine(
   },
   {
     actions: {
-      // #region Beginning
-      hydrateResearch: assign((context, { data }) => {
-        context.ui.data.filtered = data?.filtered;
-        context.ui.dropdowns.country.current = data?.filters?.country;
-        context.ui.dropdowns.type.current = data?.filters?.type;
-        context.ui.inputs.price.inferiorOrEqualTo.current =
-          data?.filters?.inferiorOrEqualTo;
-        context.ui.inputs.price.superiorOrEqualTo.current =
-          data?.filters?.superiorOrEqualTo;
-      }),
-
+      // #region Begining
       resetCache: assign((context) => {
         context.cache = {};
+      }),
+
+      resetInputs: assign((context) => {
+        context.ui.dropdowns.country.open = false;
+        context.ui.dropdowns.country.current = undefined;
+
+        context.ui.dropdowns.type.open = false;
+        context.ui.dropdowns.type.current = undefined;
+
+        context.ui.inputs.price.inferiorOrEqualTo.current = undefined;
+        context.ui.inputs.price.superiorOrEqualTo.current = undefined;
       }),
 
       generateLists: assign((context, { data }) => {
@@ -468,193 +366,139 @@ export const machine = createMachine(
         context.cache.types = data.types;
       }),
 
-      resetInputs: assign((context) => {
-        context.ui.dropdowns.country = {
-          ...context.ui.dropdowns.country,
-          editing: false,
-          open: false,
-          current: undefined,
-        };
+      hydrate: assign((context, { data }) => {
+        console.log('data =>', data);
 
-        context.ui.dropdowns.type = {
-          ...context.ui.dropdowns.type,
-          editing: false,
-          open: false,
-          current: undefined,
-        };
-
-        context.ui.inputs.price = {
-          inferiorOrEqualTo: { editing: false },
-          superiorOrEqualTo: { editing: false },
-        };
+        context.ui.data.filtered = data?.filtered;
+        context.ui.dropdowns.country.current = data?.currentQuery.country;
+        context.ui.dropdowns.type.current = data?.currentQuery.type;
+        context.ui.inputs.price.inferiorOrEqualTo.current =
+          data?.currentQuery.inferiorOrEqualTo;
+        context.ui.inputs.price.superiorOrEqualTo.current =
+          data?.currentQuery.superiorOrEqualTo;
       }),
       // #endregion
 
       // #region Country
-      assignFilterCountry: assign((context, { country }) => {
-        context.ui.dropdowns.country.current = country;
-        context.ui.dropdowns.country.editing = true;
+      assignInputCountry: assign((context, { input }) => {
+        context.ui.dropdowns.country.current = input;
       }),
 
-      resetFilterCountry: assign((context) => {
-        context.ui.dropdowns.country.editing = false;
+      sendInputCountry: send(
+        (_, { input }) => ({
+          type: EVENTS.INPUT,
+          input,
+        }),
+        { to: MACHINES.DROPDOWNS.COUNTRY }
+      ),
+
+      toggleCountry: assign((context, { open }) => {
+        context.ui.dropdowns.country.open = open;
       }),
 
-      toggleCountryDropdown: assign((context) => {
-        context.ui.dropdowns.country.open =
-          !context.ui.dropdowns.country.open;
+      sendToggleCountry: send('TOGGLE', {
+        to: MACHINES.DROPDOWNS.COUNTRY,
       }),
       // #endregion
 
-      // #region PropertyType
-      assignFilterType: assign((context, { propertyType }) => {
-        context.ui.dropdowns.type.current = propertyType;
-        context.ui.dropdowns.type.editing = true;
+      // #region Type
+      assignInputType: assign((context, { input }) => {
+        context.ui.dropdowns.type.current = input;
       }),
 
-      resetFilterType: assign((context) => {
-        context.ui.dropdowns.type.editing = false;
+      sendInputType: send(
+        (_, { input }) => ({
+          type: EVENTS.INPUT,
+          input,
+        }),
+        { to: MACHINES.DROPDOWNS.TYPE }
+      ),
+
+      toggleType: assign((context, { open }) => {
+        context.ui.dropdowns.type.open = open;
       }),
 
-      toggleTypeDropdown: assign((context) => {
-        context.ui.dropdowns.type.open = !context.ui.dropdowns.type.open;
+      sendToggleType: send('TOGGLE', {
+        to: MACHINES.DROPDOWNS.TYPE,
       }),
       // #endregion
 
       // #region Price
-      setPriceInferior: assign((context, { value: inferiorOrEqualTo }) => {
-        context.ui.inputs.price.inferiorOrEqualTo = {
-          current: inferiorOrEqualTo,
-          editing: true,
-        };
+      sendInputSuperior: send(
+        (_, { input }) => ({
+          type: EVENTS.INPUT,
+          input,
+        }),
+        { to: MACHINES.INPUTS.PRICE.SUPERIOR_OR_EQUAL_TO, delay: 10 }
+      ),
+
+      assignInputSuperior: assign((context, { input }) => {
+        context.ui.inputs.price.superiorOrEqualTo.current = input;
       }),
 
-      setPriceSuperior: assign((context, { value: superiorOrEqualTo }) => {
-        context.ui.inputs.price.superiorOrEqualTo = {
-          current: superiorOrEqualTo,
-          editing: true,
-        };
-      }),
+      sendInputInferior: send(
+        (_, { input }) => ({
+          type: EVENTS.INPUT,
+          input,
+        }),
+        { to: MACHINES.INPUTS.PRICE.INFERIOR_OR_EQUAL_TO, delay: 10 }
+      ),
 
-      clearTimeouts: assign((context) => {
-        clearTimeout(context.ui.timeouts.inferiorFocusInterval);
-        clearTimeout(context.ui.timeouts.superiorFocusInterval);
-      }),
-
-      resetFilterInferiorOrEqualTo: assign((context) => {
-        context.ui.inputs.price.inferiorOrEqualTo.editing = false;
-      }),
-
-      resetFilterSuperiorOrEqualTo: assign((context) => {
-        context.ui.inputs.price.superiorOrEqualTo.editing = false;
-      }),
-
-      focusInferiorOrEqualTo: assign((context) => {
-        context.ui.timeouts.inferiorFocusInterval = setTimeout(
-          () =>
-            document
-              ?.getElementById(inferiorOrEqualToID)
-              ?.classList.add('border-red-300', 'border-2'),
-          INTERVAL_SWITCH
-        );
-        context.ui.timeouts.superiorFocusInterval = setTimeout(
-          () =>
-            document
-              ?.getElementById(inferiorOrEqualToID)
-              ?.classList.remove('border-red-300', 'border-2'),
-          INTERVAL_RETURN
-        );
-      }),
-
-      focusSuperiorOrEqualTo: assign((context) => {
-        context.ui.timeouts.inferiorFocusInterval = setTimeout(
-          () =>
-            document
-              ?.getElementById(inferiorOrEqualToID)
-              ?.classList.remove('border-red-300', 'border-2'),
-          INTERVAL_RETURN
-        );
-        context.ui.timeouts.superiorFocusInterval = setTimeout(
-          () =>
-            document
-              ?.getElementById(superiorOrEqualToID)
-              ?.classList.add('border-red-300', 'border-2'),
-          INTERVAL_SWITCH
-        );
+      assignInputInferior: assign((context, { input }) => {
+        context.ui.inputs.price.inferiorOrEqualTo.current = input;
       }),
       // #endregion
 
-      buildQuery: assign((context) => {
+      // #region Query
+      concatValuesForQuery: assign((context) => {
         const country = context.ui.dropdowns.country.current;
         const type = context.ui.dropdowns.type.current;
-        const inferiorOrEqualToBeforeParsing =
-          context.ui.inputs.price.inferiorOrEqualTo.current;
-        const superiorOrEqualToBeforeParsing =
-          context.ui.inputs.price.superiorOrEqualTo.current;
-
-        const inferiorOrEqualTo =
-          !!inferiorOrEqualToBeforeParsing &&
-          inferiorOrEqualToBeforeParsing.trim() !== ''
-            ? Number.parseInt(inferiorOrEqualToBeforeParsing)
-            : undefined;
-
         const superiorOrEqualTo =
-          !!superiorOrEqualToBeforeParsing &&
-          superiorOrEqualToBeforeParsing.trim() !== ''
-            ? Number.parseInt(superiorOrEqualToBeforeParsing)
-            : undefined;
+          context.ui.inputs.price.superiorOrEqualTo.current;
+        const inferiorOrEqualTo =
+          context.ui.inputs.price.inferiorOrEqualTo.current;
 
-        context.cache.query = {
+        context.ui.data.currentQuery = {
           country,
           type,
-          inferiorOrEqualTo,
           superiorOrEqualTo,
+          inferiorOrEqualTo,
         };
+      }),
+
+      sendQuery: send((context) => {
+        const query = context.ui.data.currentQuery;
+        return { type: 'QUERY', query };
+      }),
+
+      forward: forwardTo('queryBuilderMachine'),
+
+      buildQuery: assign((context, { data }) => {
+        context.cache.query = data;
       }),
 
       filter: assign((context, { data }) => {
         context.ui.data.filtered = data;
       }),
+
+      resetQuery: assign((context) => {
+        context.cache.query = undefined;
+      }),
+
+      // #endregion
     },
 
     guards: {
-      // #region Price
-      inferiorAndSuperiorAreSet: (context) => {
-        // #region Variables
-        const inferiorOrEqualTo =
-          context.ui.inputs.price.inferiorOrEqualTo.current !== undefined;
-        const superiorOrEqualTo =
-          context.ui.inputs.price.superiorOrEqualTo.current !== undefined;
-        // #endregion
-
-        return inferiorOrEqualTo && superiorOrEqualTo;
-      },
-
-      isInferiorOrEqualEditing: (context) => {
-        return context.ui.inputs.price.inferiorOrEqualTo.editing;
-      },
-
-      isSuperiorOrEqualEditing: (context) => {
-        return context.ui.inputs.price.superiorOrEqualTo.editing;
-      },
-
       isBrowser,
-
-      isInputNumber: (_, { value }) => {
-        return !value || /\d+/.test(value);
-      },
-      // #endregion
-
-      isCountryEditing: (context) => {
-        return context.ui.dropdowns.country.editing;
-      },
-
-      isTypeEditing: (context) => {
-        return context.ui.dropdowns.type.editing;
-      },
     },
 
     services: {
+      dropdownMachine,
+      filterMachine,
+      inputMachine,
+      queryBuilderMachine,
+      hydrationMachine,
+
       generateLists: async () => {
         const types = new Set(MAIN_DATA.map((data) => data.type));
         types.add(ALL_OPTIONS);
@@ -662,24 +506,12 @@ export const machine = createMachine(
         countries.add(ALL_OPTIONS);
         return { types, countries };
       },
-
-      filterMachine,
-
-      hydrateResearch: async () => {
-        const raw = localStorage.getItem(LOCAL_STORAGE_ID);
-        if (!raw) return;
-        const data = JSON.parse(raw) as HydrationData;
-        return data;
-      },
     },
 
     delays: {
       TIME_BETWEEN_REQUESTS,
-      THROTTLE_TIME,
     },
   }
 );
 
-export type MainMachine = typeof machine;
-export type EventMachine = EventFrom<MainMachine>;
-export type State = StateFrom<MainMachine>;
+export default machine;

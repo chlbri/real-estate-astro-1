@@ -24,9 +24,10 @@ export interface Typegen0 {
   eventsCausingGuards: {
     currentIsNotDefined: "";
     currentNotWellFormated: "";
+    isOlder: "";
     previousEqualsCurrent: "";
   };
   eventsCausingDelays: {};
-  matchesStates: "checking" | "idle" | "success";
+  matchesStates: "checking" | "error" | "idle" | "success";
   tags: never;
 }

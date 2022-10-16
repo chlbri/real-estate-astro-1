@@ -3,7 +3,9 @@
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    "": { type: "" };
+    "xstate.after(THROTTLE_TIME)#(machine).idle": {
+      type: "xstate.after(THROTTLE_TIME)#(machine).idle";
+    };
     "xstate.init": { type: "xstate.init" };
   };
   invokeSrcNameMap: {};
@@ -14,19 +16,17 @@ export interface Typegen0 {
     delays: never;
   };
   eventsCausingActions: {
-    buildQuery: "";
-    errorEquals: "";
-    errorFormat: "";
-    errorNotDefined: "";
-    mergeQuery: "";
+    input: "INPUT";
+    resetEdititng: "xstate.after(THROTTLE_TIME)#(machine).idle";
+    sendParentInput: "INPUT";
   };
   eventsCausingServices: {};
   eventsCausingGuards: {
-    currentIsNotDefined: "";
-    currentNotWellFormated: "";
-    previousEqualsCurrent: "";
+    isEditing: "xstate.after(THROTTLE_TIME)#(machine).idle";
   };
-  eventsCausingDelays: {};
-  matchesStates: "checking" | "idle" | "success";
+  eventsCausingDelays: {
+    THROTTLE_TIME: "INPUT" | "xstate.init";
+  };
+  matchesStates: "done" | "idle";
   tags: never;
 }

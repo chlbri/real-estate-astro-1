@@ -1,5 +1,6 @@
+import { ONE_DAY } from '@-constants/numbers';
 import { ERRORS } from '@-constants/objects';
-import { isInputNumber } from '@-utils/number';
+import { isInputNumber, safeParseFloat } from '@-utils/number';
 import { assign } from '@xstate/immer';
 import { dequal } from 'dequal';
 import { createMachine } from 'xstate';
@@ -42,17 +43,28 @@ export const queryBuilderMachine = createMachine(
           {
             cond: 'currentIsNotDefined',
             actions: ['errorNotDefined'],
-          },
-          {
-            cond: 'previousEqualsCurrent',
-            actions: ['errorEquals'],
+            target: 'error',
           },
           {
             cond: 'currentNotWellFormated',
             actions: ['errorFormat'],
+            target: 'error',
+          },
+          {
+            cond: 'isOlder',
+            target: 'success',
+            actions: ['buildQuery'],
+          },
+          {
+            cond: 'previousEqualsCurrent',
+            actions: ['errorEquals'],
+            target: 'error',
           },
           { target: 'success', actions: ['buildQuery'] },
         ],
+      },
+      error: {
+        type: 'final',
       },
 
       success: {
@@ -64,17 +76,17 @@ export const queryBuilderMachine = createMachine(
   {
     actions: {
       mergeQuery: assign((context, { query }) => {
-        context.currentQuery = query ?? context.currentQuery;
+        context.currentQuery = query;
       }),
 
       buildQuery: assign((context) => {
         // #region Variables
         const country = context.currentQuery!.country;
         const type = context.currentQuery!.type;
-        const inferiorOrEqualTo = parseInt(
+        const inferiorOrEqualTo = safeParseFloat(
           context.currentQuery!.inferiorOrEqualTo!
         );
-        const superiorOrEqualTo = parseInt(
+        const superiorOrEqualTo = safeParseFloat(
           context.currentQuery!.superiorOrEqualTo!
         );
         // #endregion
@@ -98,21 +110,20 @@ export const queryBuilderMachine = createMachine(
         return dequal(currentQuery, previousQuery);
       },
 
+      isOlder: ({ date }) => {
+        if (!date) return false;
+        return Date.now() - date > ONE_DAY;
+      },
+
       currentNotWellFormated: ({ currentQuery }) => {
-        const { country, type, inferiorOrEqualTo, superiorOrEqualTo } =
-          currentQuery!;
+        const { inferiorOrEqualTo, superiorOrEqualTo } = currentQuery!;
 
         const inferiorIsNotWellFormated =
           !isInputNumber(inferiorOrEqualTo);
         const superiorIsNotWellFormated =
           !isInputNumber(superiorOrEqualTo);
 
-        return (
-          !country ||
-          !type ||
-          inferiorIsNotWellFormated ||
-          superiorIsNotWellFormated
-        );
+        return inferiorIsNotWellFormated || superiorIsNotWellFormated;
       },
     },
   }

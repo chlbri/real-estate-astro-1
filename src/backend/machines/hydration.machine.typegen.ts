@@ -3,7 +3,6 @@
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    "": { type: "" };
     "done.invoke.(machine).filtering:invocation[0]": {
       type: "done.invoke.(machine).filtering:invocation[0]";
       data: unknown;
@@ -11,6 +10,11 @@ export interface Typegen0 {
     };
     "done.invoke.(machine).hydration:invocation[0]": {
       type: "done.invoke.(machine).hydration:invocation[0]";
+      data: unknown;
+      __tip: "See the XState TS docs to learn how to strongly type this.";
+    };
+    "done.invoke.queryBuilderMachine": {
+      type: "done.invoke.queryBuilderMachine";
       data: unknown;
       __tip: "See the XState TS docs to learn how to strongly type this.";
     };
@@ -22,14 +26,16 @@ export interface Typegen0 {
       type: "error.platform.(machine).hydration:invocation[0]";
       data: unknown;
     };
-    "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).busy": {
-      type: "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).busy";
+    "error.platform.queryBuilderMachine": {
+      type: "error.platform.queryBuilderMachine";
+      data: unknown;
     };
     "xstate.init": { type: "xstate.init" };
   };
   invokeSrcNameMap: {
-    filterProperties: "done.invoke.(machine).filtering:invocation[0]";
-    saveFiltered: "done.invoke.(machine).hydration:invocation[0]";
+    filterMachine: "done.invoke.(machine).filtering:invocation[0]";
+    hydrate: "done.invoke.(machine).hydration:invocation[0]";
+    queryBuilderMachine: "done.invoke.queryBuilderMachine";
   };
   missingImplementations: {
     actions: never;
@@ -38,26 +44,22 @@ export interface Typegen0 {
     delays: never;
   };
   eventsCausingActions: {
+    buildQuery: "done.invoke.queryBuilderMachine";
     filter: "done.invoke.(machine).filtering:invocation[0]";
-    sendParentHydrationError: "error.platform.(machine).hydration:invocation[0]";
-    sendParentQueryError: "error.platform.(machine).filtering:invocation[0]";
+    hydrate: "done.invoke.(machine).hydration:invocation[0]";
+    rethrow:
+      | "error.platform.(machine).filtering:invocation[0]"
+      | "error.platform.(machine).hydration:invocation[0]"
+      | "error.platform.queryBuilderMachine";
+    sendQuery: "done.invoke.(machine).hydration:invocation[0]";
   };
   eventsCausingServices: {
-    filterProperties: "xstate.init";
-    saveFiltered: "done.invoke.(machine).filtering:invocation[0]";
+    filterMachine: "done.invoke.queryBuilderMachine";
+    hydrate: "xstate.init";
+    queryBuilderMachine: "done.invoke.(machine).hydration:invocation[0]";
   };
-  eventsCausingGuards: {
-    isBrowser: "done.invoke.(machine).filtering:invocation[0]";
-    noHydrate: "";
-  };
-  eventsCausingDelays: {
-    TIME_BETWEEN_REQUESTS:
-      | ""
-      | "done.invoke.(machine).filtering:invocation[0]"
-      | "done.invoke.(machine).hydration:invocation[0]"
-      | "error.platform.(machine).filtering:invocation[0]"
-      | "error.platform.(machine).hydration:invocation[0]";
-  };
-  matchesStates: "busy" | "done" | "filtering" | "hydration";
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
+  matchesStates: "building" | "error" | "filtering" | "hydration" | "success";
   tags: never;
 }

@@ -1,6 +1,5 @@
 /** @jsxImportSource solid-js */
 
-import { getLabel } from '@-hooks/helpers/getLabel';
 import type { Component } from 'solid-js';
 import { LocationPin } from '../../shared/atoms/icons/LocationPin';
 import { ArrowToggle } from '../molecules/ArrowToggle';
@@ -34,18 +33,18 @@ export const DropdownCountry: Component<Props> = ({}) => {
           'opacity-90 pointer-events-auto': canBeOpened(),
         }}
       >
-        {getCountries().map((country) => (
+        {getCountries().map((input) => (
           <li
             class='cursor-pointer transition hover:text-violet-500'
             onclick={() => {
-              filter({ country });
+              filter(input);
               toggle();
             }}
             classList={{
-              'text-violet-900': isCurrent(country),
+              'text-violet-900': isCurrent(input),
             }}
           >
-            {country}
+            {input}
           </li>
         ))}
       </ul>

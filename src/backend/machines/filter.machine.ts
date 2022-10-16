@@ -1,12 +1,11 @@
 import { MAIN_DATA, Property } from '@-backend/data/main';
+import { TIME_BETWEEN_REQUESTS } from '@-constants/numbers';
 import { ERRORS } from '@-constants/objects';
-import {
-  DEFAULT_EVENT_DELIMITER,
-  LOCAL_STORAGE_ID,
-} from '@-constants/strings';
+import { ALL_OPTIONS, LOCAL_STORAGE_ID } from '@-constants/strings';
 import { isBrowser } from '@-utils/environment';
 import { assign } from '@xstate/immer';
-import { createMachine, sendParent } from 'xstate';
+import { createMachine } from 'xstate';
+import { escalate } from 'xstate/lib/actions';
 
 export type QueryFilter = {
   country?: string;
@@ -17,14 +16,12 @@ export type QueryFilter = {
 
 export type Context = {
   filtered?: Property[];
-  name: string;
+  noHydrate?: boolean;
 } & QueryFilter;
 
-type HydrationData = {
-  filtered?: Property[];
-  filters?: QueryFilter;
+export type HydrationData = {
   date?: number;
-};
+} & QueryFilter;
 
 export const filterMachine = createMachine(
   {
@@ -67,6 +64,10 @@ export const filterMachine = createMachine(
             target: 'busy',
           },
         },
+        always: {
+          cond: 'noHydrate',
+          target: 'busy',
+        },
       },
       busy: {
         after: {
@@ -89,8 +90,12 @@ export const filterMachine = createMachine(
       }) => {
         const out = MAIN_DATA.filter(
           ({ country, type, price }) =>
-            (!currentCountry || country === currentCountry) &&
-            (!currentType || type === currentType) &&
+            (!currentCountry ||
+              currentCountry === ALL_OPTIONS ||
+              country === currentCountry) &&
+            (!currentType ||
+              currentType === ALL_OPTIONS ||
+              type === currentType) &&
             (!inferiorOrEqualTo || price <= inferiorOrEqualTo) &&
             (superiorOrEqualTo === undefined || price >= superiorOrEqualTo)
         );
@@ -98,10 +103,9 @@ export const filterMachine = createMachine(
         return out;
       },
 
-      saveFiltered: async ({ filtered, name, ...filters }) => {
+      saveFiltered: async ({ filtered, ...filters }) => {
         const data: HydrationData = {
-          filtered,
-          filters,
+          ...filters,
           date: Date.now(),
         };
         localStorage.setItem(LOCAL_STORAGE_ID, JSON.stringify(data));
@@ -113,19 +117,17 @@ export const filterMachine = createMachine(
         context.filtered = data;
       }),
 
-      // #region Parent
-      sendParentQueryError: sendParent((context) => ({
-        type: `${context.name}${DEFAULT_EVENT_DELIMITER}${ERRORS.FETCH.DATA}`,
-      })),
-
-      sendParentHydrationError: sendParent((context) => ({
-        type: `${context.name}${DEFAULT_EVENT_DELIMITER}${ERRORS.FETCH.HYDRATION}`,
-      })),
-      // #endregion
+      sendParentQueryError: escalate(ERRORS.FETCH.DATA),
+      sendParentHydrationError: escalate(ERRORS.FETCH.HYDRATION),
     },
 
     guards: {
       isBrowser,
+      noHydrate: (context) => !!context.noHydrate,
+    },
+
+    delays: {
+      TIME_BETWEEN_REQUESTS,
     },
   }
 );

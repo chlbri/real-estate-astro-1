@@ -14,68 +14,56 @@ export interface Typegen0 {
       data: unknown;
       __tip: "See the XState TS docs to learn how to strongly type this.";
     };
-    "done.invoke.(machine).working.dropdowns.country.filtering:invocation[0]": {
-      type: "done.invoke.(machine).working.dropdowns.country.filtering:invocation[0]";
+    "done.invoke.(machine).working.working.querying.filtering:invocation[0]": {
+      type: "done.invoke.(machine).working.working.querying.filtering:invocation[0]";
       data: unknown;
       __tip: "See the XState TS docs to learn how to strongly type this.";
     };
-    "done.invoke.(machine).working.dropdowns.type.filtering:invocation[0]": {
-      type: "done.invoke.(machine).working.dropdowns.type.filtering:invocation[0]";
+    "done.invoke.(machine).working.working.ui.idle.dropdowns.country:invocation[0]": {
+      type: "done.invoke.(machine).working.working.ui.idle.dropdowns.country:invocation[0]";
       data: unknown;
       __tip: "See the XState TS docs to learn how to strongly type this.";
     };
-    "done.invoke.(machine).working.inputs.price.inferiorTo.filtering:invocation[0]": {
-      type: "done.invoke.(machine).working.inputs.price.inferiorTo.filtering:invocation[0]";
+    "done.invoke.(machine).working.working.ui.idle.dropdowns.type:invocation[0]": {
+      type: "done.invoke.(machine).working.working.ui.idle.dropdowns.type:invocation[0]";
       data: unknown;
       __tip: "See the XState TS docs to learn how to strongly type this.";
     };
-    "done.invoke.(machine).working.inputs.price.superiorTo.filtering:invocation[0]": {
-      type: "done.invoke.(machine).working.inputs.price.superiorTo.filtering:invocation[0]";
+    "done.invoke.(machine).working.working.ui.idle.inputs.inferiorOrEqualTo:invocation[0]": {
+      type: "done.invoke.(machine).working.working.ui.idle.inputs.inferiorOrEqualTo:invocation[0]";
       data: unknown;
       __tip: "See the XState TS docs to learn how to strongly type this.";
     };
-    "error.platform.(machine).working.dropdowns.country.filtering:invocation[0]": {
-      type: "error.platform.(machine).working.dropdowns.country.filtering:invocation[0]";
+    "done.invoke.(machine).working.working.ui.idle.inputs.superiorOrEqualTo:invocation[0]": {
+      type: "done.invoke.(machine).working.working.ui.idle.inputs.superiorOrEqualTo:invocation[0]";
       data: unknown;
+      __tip: "See the XState TS docs to learn how to strongly type this.";
     };
-    "error.platform.(machine).working.dropdowns.type.filtering:invocation[0]": {
-      type: "error.platform.(machine).working.dropdowns.type.filtering:invocation[0]";
+    "done.invoke.queryBuilderMachine": {
+      type: "done.invoke.queryBuilderMachine";
       data: unknown;
+      __tip: "See the XState TS docs to learn how to strongly type this.";
     };
-    "error.platform.(machine).working.inputs.price.inferiorTo.filtering:invocation[0]": {
-      type: "error.platform.(machine).working.inputs.price.inferiorTo.filtering:invocation[0]";
+    "error.platform.queryBuilderMachine": {
+      type: "error.platform.queryBuilderMachine";
       data: unknown;
-    };
-    "error.platform.(machine).working.inputs.price.superiorTo.filtering:invocation[0]": {
-      type: "error.platform.(machine).working.inputs.price.superiorTo.filtering:invocation[0]";
-      data: unknown;
-    };
-    "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.country.filter": {
-      type: "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.country.filter";
-    };
-    "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.type.filter": {
-      type: "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.type.filter";
-    };
-    "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.inferiorTo.filter": {
-      type: "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.inferiorTo.filter";
-    };
-    "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.superiorTo.filter": {
-      type: "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.superiorTo.filter";
     };
     "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).waiting": {
       type: "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).waiting";
     };
     "xstate.init": { type: "xstate.init" };
-    "xstate.stop": { type: "xstate.stop" };
   };
   invokeSrcNameMap: {
-    filterMachine:
-      | "done.invoke.(machine).working.dropdowns.country.filtering:invocation[0]"
-      | "done.invoke.(machine).working.dropdowns.type.filtering:invocation[0]"
-      | "done.invoke.(machine).working.inputs.price.inferiorTo.filtering:invocation[0]"
-      | "done.invoke.(machine).working.inputs.price.superiorTo.filtering:invocation[0]";
+    dropdownMachine:
+      | "done.invoke.(machine).working.working.ui.idle.dropdowns.country:invocation[0]"
+      | "done.invoke.(machine).working.working.ui.idle.dropdowns.type:invocation[0]";
+    filterMachine: "done.invoke.(machine).working.working.querying.filtering:invocation[0]";
     generateLists: "done.invoke.(machine).starting:invocation[0]";
-    hydrateResearch: "done.invoke.(machine).hydration:invocation[0]";
+    hydrationMachine: "done.invoke.(machine).hydration:invocation[0]";
+    inputMachine:
+      | "done.invoke.(machine).working.working.ui.idle.inputs.superiorOrEqualTo:invocation[0]"
+      | "done.invoke.(machine).working.working.ui.idle.inputs.inferiorOrEqualTo:invocation[0]";
+    queryBuilderMachine: "done.invoke.queryBuilderMachine";
   };
   missingImplementations: {
     actions: never;
@@ -84,70 +72,49 @@ export interface Typegen0 {
     delays: never;
   };
   eventsCausingActions: {
-    assignFilterCountry: "FILTER_BY_COUNTRY";
-    assignFilterType: "FILTER_BY_TYPE";
-    buildQuery:
-      | ""
-      | "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.country.filter"
-      | "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.type.filter";
-    clearTimeouts: "SET_PRICE_INFERIOR" | "SET_PRICE_SUPERIOR";
-    filter:
-      | "done.invoke.(machine).working.dropdowns.country.filtering:invocation[0]"
-      | "done.invoke.(machine).working.dropdowns.type.filtering:invocation[0]"
-      | "done.invoke.(machine).working.inputs.price.inferiorTo.filtering:invocation[0]"
-      | "done.invoke.(machine).working.inputs.price.superiorTo.filtering:invocation[0]";
-    focusInferiorOrEqualTo: "";
-    focusSuperiorOrEqualTo: "";
+    assignInputCountry: "CHILD/COUNTRY/INPUT";
+    assignInputInferior: "CHILD/INFERIOR_OR_EQUAL_TO/INPUT";
+    assignInputSuperior: "CHILD/SUPERIOR_OR_EQUAL_TO/INPUT";
+    assignInputType: "CHILD/TYPE/INPUT";
+    buildQuery: "done.invoke.queryBuilderMachine";
+    concatValuesForQuery:
+      | "done.invoke.(machine).working.working.ui.idle.dropdowns.country:invocation[0]"
+      | "done.invoke.(machine).working.working.ui.idle.dropdowns.type:invocation[0]"
+      | "done.invoke.(machine).working.working.ui.idle.inputs.inferiorOrEqualTo:invocation[0]"
+      | "done.invoke.(machine).working.working.ui.idle.inputs.superiorOrEqualTo:invocation[0]";
+    filter: "done.invoke.(machine).working.working.querying.filtering:invocation[0]";
+    forward: "QUERY";
     generateLists: "done.invoke.(machine).starting:invocation[0]";
-    hydrateResearch: "done.invoke.(machine).hydration:invocation[0]";
+    hydrate: "done.invoke.(machine).hydration:invocation[0]";
     resetCache: "__RINIT__";
-    resetFilterCountry: "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.country.filter";
-    resetFilterInferiorOrEqualTo: "" | "__RINIT__" | "xstate.stop";
-    resetFilterSuperiorOrEqualTo: "" | "__RINIT__" | "xstate.stop";
-    resetFilterType: "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.type.filter";
-    resetInputs:
-      | "RESET_INPUTS"
-      | "__RINIT__"
-      | "done.invoke.(machine).starting:invocation[0]";
-    setPriceInferior: "SET_PRICE_INFERIOR";
-    setPriceSuperior: "SET_PRICE_SUPERIOR";
-    toggleCountryDropdown: "TOGGLE_DROPDOWN_COUNTRY";
-    toggleTypeDropdown: "TOGGLE_DROPDOWN_TYPE";
+    resetInputs: "__RINIT__" | "done.invoke.(machine).starting:invocation[0]";
+    resetQuery: "";
+    sendInputCountry: "COUNTRY/INPUT";
+    sendInputInferior: "INFERIOR_OR_EQUAL_TO/INPUT";
+    sendInputSuperior: "SUPERIOR_OR_EQUAL_TO/INPUT";
+    sendInputType: "TYPE/INPUT";
+    sendQuery:
+      | "done.invoke.(machine).working.working.ui.idle.dropdowns.country:invocation[0]"
+      | "done.invoke.(machine).working.working.ui.idle.dropdowns.type:invocation[0]"
+      | "done.invoke.(machine).working.working.ui.idle.inputs.inferiorOrEqualTo:invocation[0]"
+      | "done.invoke.(machine).working.working.ui.idle.inputs.superiorOrEqualTo:invocation[0]";
+    sendToggleCountry: "COUNTRY/TOGGLE";
+    sendToggleType: "TYPE/TOGGLE";
+    toggleCountry: "CHILD/COUNTRY/TOGGLE";
+    toggleType: "CHILD/TYPE/TOGGLE";
   };
   eventsCausingServices: {
-    filterMachine:
-      | ""
-      | "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.country.filter"
-      | "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.type.filter";
+    dropdownMachine: "";
+    filterMachine: "done.invoke.queryBuilderMachine";
     generateLists: "";
-    hydrateResearch: "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).waiting";
+    hydrationMachine: "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).waiting";
+    inputMachine: "";
+    queryBuilderMachine: "";
   };
   eventsCausingGuards: {
-    inferiorAndSuperiorAreSet: "";
-    isBrowser: "" | "done.invoke.(machine).starting:invocation[0]";
-    isCountryEditing: "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.country.filter";
-    isInferiorOrEqualEditing: "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.inferiorTo.filter";
-    isInputNumber: "SET_PRICE_INFERIOR" | "SET_PRICE_SUPERIOR";
-    isSuperiorOrEqualEditing: "xstate.after(THROTTLE_TIME)#(machine).working.inputs.price.superiorTo.filter";
-    isTypeEditing: "xstate.after(THROTTLE_TIME)#(machine).working.dropdowns.type.filter";
+    isBrowser: "done.invoke.(machine).starting:invocation[0]";
   };
   eventsCausingDelays: {
-    THROTTLE_TIME:
-      | ""
-      | "FILTER_BY_COUNTRY"
-      | "FILTER_BY_TYPE"
-      | "SET_PRICE_INFERIOR"
-      | "SET_PRICE_SUPERIOR"
-      | "done.invoke.(machine).hydration:invocation[0]"
-      | "done.invoke.(machine).starting:invocation[0]"
-      | "done.invoke.(machine).working.dropdowns.country.filtering:invocation[0]"
-      | "done.invoke.(machine).working.dropdowns.type.filtering:invocation[0]"
-      | "done.invoke.(machine).working.inputs.price.inferiorTo.filtering:invocation[0]"
-      | "done.invoke.(machine).working.inputs.price.superiorTo.filtering:invocation[0]"
-      | "error.platform.(machine).working.dropdowns.country.filtering:invocation[0]"
-      | "error.platform.(machine).working.dropdowns.type.filtering:invocation[0]"
-      | "error.platform.(machine).working.inputs.price.inferiorTo.filtering:invocation[0]"
-      | "error.platform.(machine).working.inputs.price.superiorTo.filtering:invocation[0]";
     TIME_BETWEEN_REQUESTS: "done.invoke.(machine).starting:invocation[0]";
   };
   matchesStates:
@@ -156,44 +123,43 @@ export interface Typegen0 {
     | "starting"
     | "waiting"
     | "working"
-    | "working.dropdowns"
-    | "working.dropdowns.country"
-    | "working.dropdowns.country.filter"
-    | "working.dropdowns.country.filtering"
-    | "working.dropdowns.type"
-    | "working.dropdowns.type.filter"
-    | "working.dropdowns.type.filtering"
-    | "working.inputs"
-    | "working.inputs.price"
-    | "working.inputs.price.inferiorTo"
-    | "working.inputs.price.inferiorTo.checking"
-    | "working.inputs.price.inferiorTo.filter"
-    | "working.inputs.price.inferiorTo.filtering"
-    | "working.inputs.price.superiorTo"
-    | "working.inputs.price.superiorTo.checking"
-    | "working.inputs.price.superiorTo.filter"
-    | "working.inputs.price.superiorTo.filtering"
+    | "working.idle"
+    | "working.working"
+    | "working.working.querying"
+    | "working.working.querying.building"
+    | "working.working.querying.filtering"
+    | "working.working.ui"
+    | "working.working.ui.idle"
+    | "working.working.ui.idle.dropdowns"
+    | "working.working.ui.idle.dropdowns.country"
+    | "working.working.ui.idle.dropdowns.type"
+    | "working.working.ui.idle.inputs"
+    | "working.working.ui.idle.inputs.inferiorOrEqualTo"
+    | "working.working.ui.idle.inputs.superiorOrEqualTo"
+    | "working.working.ui.querying"
     | {
         working?:
-          | "dropdowns"
-          | "inputs"
+          | "idle"
+          | "working"
           | {
-              dropdowns?:
-                | "country"
-                | "type"
+              working?:
+                | "querying"
+                | "ui"
                 | {
-                    country?: "filter" | "filtering";
-                    type?: "filter" | "filtering";
-                  };
-              inputs?:
-                | "price"
-                | {
-                    price?:
-                      | "inferiorTo"
-                      | "superiorTo"
+                    querying?: "building" | "filtering";
+                    ui?:
+                      | "idle"
+                      | "querying"
                       | {
-                          inferiorTo?: "checking" | "filter" | "filtering";
-                          superiorTo?: "checking" | "filter" | "filtering";
+                          idle?:
+                            | "dropdowns"
+                            | "inputs"
+                            | {
+                                dropdowns?: "country" | "type";
+                                inputs?:
+                                  | "inferiorOrEqualTo"
+                                  | "superiorOrEqualTo";
+                              };
                         };
                   };
             };

@@ -1,7 +1,7 @@
 export function safeParseFloat(value?: string) {
   if (!value) return;
 
-  const trimmedValue = value.trim();
+  const trimmedValue = ('' + value).trim();
   const test = /\d+/.test(trimmedValue);
   if (!test) return;
 
@@ -9,7 +9,8 @@ export function safeParseFloat(value?: string) {
 }
 
 export function isInputNumber(value?: string) {
-  if (!value) return false;
-  const trimmedValue = value.trim();
+  if (!value) return true;
+
+  const trimmedValue = ('' + value).trim();
   return /\d+/.test(trimmedValue);
 }

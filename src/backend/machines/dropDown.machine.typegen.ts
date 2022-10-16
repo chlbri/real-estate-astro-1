@@ -3,13 +3,20 @@
 export interface Typegen0 {
   "@@xstate/typegen": true;
   internalEvents: {
-    "xstate.after(THROTTLE_TIME)#(machine).idle": {
-      type: "xstate.after(THROTTLE_TIME)#(machine).idle";
+    "done.invoke.inputMachine": {
+      type: "done.invoke.inputMachine";
+      data: unknown;
+      __tip: "See the XState TS docs to learn how to strongly type this.";
+    };
+    "error.platform.inputMachine": {
+      type: "error.platform.inputMachine";
+      data: unknown;
     };
     "xstate.init": { type: "xstate.init" };
-    "xstate.stop": { type: "xstate.stop" };
   };
-  invokeSrcNameMap: {};
+  invokeSrcNameMap: {
+    inputMachine: "done.invoke.inputMachine";
+  };
   missingImplementations: {
     actions: never;
     services: never;
@@ -17,20 +24,16 @@ export interface Typegen0 {
     delays: never;
   };
   eventsCausingActions: {
-    filter: "FILTER";
-    initializeToggle: "xstate.init";
-    resetEdititng: "xstate.after(THROTTLE_TIME)#(machine).idle" | "xstate.stop";
-    sendParentFilter: "FILTER";
+    input: "INPUT";
+    sendParentInput: "CHILD/INPUT/INPUT";
     sendParentToggle: "TOGGLE";
     toggle: "TOGGLE";
   };
-  eventsCausingServices: {};
-  eventsCausingGuards: {
-    isEditing: "xstate.after(THROTTLE_TIME)#(machine).idle";
+  eventsCausingServices: {
+    inputMachine: "xstate.init";
   };
-  eventsCausingDelays: {
-    THROTTLE_TIME: "FILTER" | "xstate.init";
-  };
+  eventsCausingGuards: {};
+  eventsCausingDelays: {};
   matchesStates: "done" | "idle";
   tags: never;
 }

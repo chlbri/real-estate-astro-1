@@ -3,16 +3,16 @@ import { EVENTS } from '@-constants/objects';
 import { DEFAULT_EVENT_DELIMITER } from '@-constants/strings';
 import { assign } from '@xstate/immer';
 import { createMachine, sendParent } from 'xstate';
+import { forwardTo } from 'xstate/lib/actions';
+import { inputMachine } from './input.machine';
 
 export type Context = {
-  editing?: boolean;
   open?: boolean;
-  current?: string;
   name: string;
 };
 
 export type Events =
-  | { type: 'FILTER'; value?: string }
+  | { type: 'INPUT' | 'CHILD/INPUT/INPUT'; input?: string }
   | { type: 'TOGGLE' };
 
 export const dropdownMachine = createMachine(
@@ -20,29 +20,36 @@ export const dropdownMachine = createMachine(
     predictableActionArguments: true,
     preserveActionOrder: true,
     tsTypes: {} as import('./dropDown.machine.typegen').Typegen0,
-    schema: { context: {} as Context, events: {} as Events },
-
-    initial: 'idle',
-    on: {
-      FILTER: {
-        target: '.idle',
-        actions: ['filter', 'sendParentFilter'],
-        internal: false,
-      },
-      TOGGLE: {
-        actions: ['toggle', 'sendParentToggle'],
+    schema: {
+      context: {} as Context,
+      events: {} as Events,
+      services: {} as {
+        inputMachine: { data: void };
       },
     },
 
-    entry: ['initializeToggle'],
+    initial: 'idle',
+    on: {
+      TOGGLE: {
+        actions: ['toggle', 'sendParentToggle'],
+      },
+      INPUT: {
+        actions: ['input'],
+      },
+    },
+
     states: {
       idle: {
-        exit: 'resetEdititng',
-        after: {
-          THROTTLE_TIME: {
-            target: 'done',
-            cond: 'isEditing',
-          },
+        invoke: {
+          id: 'inputMachine',
+          src: 'inputMachine',
+          data: () => ({
+            name: EVENTS.INPUT,
+          }),
+          onDone: 'done',
+        },
+        on: {
+          'CHILD/INPUT/INPUT': { actions: ['sendParentInput'] },
         },
       },
       done: {
@@ -52,27 +59,16 @@ export const dropdownMachine = createMachine(
   },
   {
     actions: {
-      initializeToggle: assign((context) => {
-        context.open = false;
-      }),
-
-      filter: assign((context, { value }) => {
-        context.current = value;
-        context.editing = true;
-      }),
-
-      resetEdititng: assign((context) => {
-        context.editing = false;
-      }),
+      input: forwardTo('inputMachine'),
 
       sendParentToggle: sendParent(({ name, open }) => ({
-        type: `${name}${DEFAULT_EVENT_DELIMITER}${EVENTS.TOGGLE}`,
+        type: `CHILD${DEFAULT_EVENT_DELIMITER}${name}${DEFAULT_EVENT_DELIMITER}${EVENTS.TOGGLE}`,
         open,
       })),
 
-      sendParentFilter: sendParent(({ name, current }) => ({
-        type: `${name}${DEFAULT_EVENT_DELIMITER}${EVENTS.VALUE}`,
-        current,
+      sendParentInput: sendParent(({ name }, { input }) => ({
+        type: `CHILD${DEFAULT_EVENT_DELIMITER}${name}${DEFAULT_EVENT_DELIMITER}${EVENTS.INPUT}`,
+        input,
       })),
 
       toggle: assign((context) => {
@@ -80,8 +76,8 @@ export const dropdownMachine = createMachine(
       }),
     },
 
-    guards: {
-      isEditing: (context) => !!context.editing,
+    services: {
+      inputMachine,
     },
 
     delays: { THROTTLE_TIME },
