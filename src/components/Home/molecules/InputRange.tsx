@@ -3,7 +3,7 @@
 import type { Accessor, Component } from 'solid-js';
 
 type Props = {
-  setValue: (value: { value?: string }) => void;
+  setValue: (value?: string) => void;
   id?: string;
   value: Accessor<string>;
 };
@@ -22,7 +22,7 @@ export const InputRange: Component<Props> = ({ setValue, id, value }) => {
         value={value()}
         onInput={(event) => {
           const value = event.currentTarget.value;
-          setValue({ value });
+          setValue(value);
         }}
       />
       <div class='w-0.5 h-full bg-gray-500'></div>

@@ -1,8 +1,30 @@
+import { MAIN_DATA } from '@-backend/data/main';
 import { THROTTLE_TIME, TIME_BETWEEN_REQUESTS } from '@-constants/numbers';
 import { advanceByTime } from '@-utils/test';
 import { interpret } from 'xstate';
-import { MAIN_DATA } from '../data/main';
-import { machine } from './main.machine';
+import { machine as machine1 } from './main.machine';
+
+const machine = machine1.withContext({
+  cache: {},
+  ui: {
+    data: {},
+    dropdowns: {
+      country: {
+        default: 'select',
+      },
+      type: {
+        default: 'select',
+      },
+    },
+    inputs: {
+      price: {
+        inferiorOrEqualTo: { default: 'price' },
+        superiorOrEqualTo: { default: 'price' },
+      },
+    },
+    timeouts: {},
+  },
+});
 
 describe.concurrent('Acceptation', () => {
   test.concurrent('The machine is defined', () => {
@@ -16,7 +38,7 @@ describe.concurrent('Acceptation', () => {
 
 describe.concurrent('Working', () => {
   const service = interpret(machine);
-  const throttle = () => advanceByTime(THROTTLE_TIME + 1);
+  const throttle = () => advanceByTime(THROTTLE_TIME * 2);
   const waitForNext = () => advanceByTime(TIME_BETWEEN_REQUESTS + 1);
 
   beforeAll(() => {
@@ -36,13 +58,14 @@ describe.concurrent('Working', () => {
   test.concurrent('It will filter by country', async () => {
     const country = 'United States';
 
-    service.send('TOGGLE_DROPDOWN_COUNTRY');
+    service.send('COUNTRY/TOGGLE');
     service.send({
-      type: 'FILTER_BY_COUNTRY',
-      country,
+      type: 'COUNTRY/INPUT',
+      input: country,
     });
 
     await throttle();
+    await waitForNext();
 
     const actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toBeDefined();
@@ -55,13 +78,14 @@ describe.concurrent('Working', () => {
     const country1 = 'United States';
     const country2 = 'Canada';
 
-    service.send('TOGGLE_DROPDOWN_COUNTRY');
+    service.send('COUNTRY/TOGGLE');
     service.send({
-      type: 'FILTER_BY_COUNTRY',
-      country: country1,
+      type: 'COUNTRY/INPUT',
+      input: country1,
     });
 
     await throttle();
+    await waitForNext();
 
     let actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toEqual(
@@ -70,13 +94,14 @@ describe.concurrent('Working', () => {
 
     await waitForNext();
 
-    service.send('TOGGLE_DROPDOWN_COUNTRY');
+    service.send('COUNTRY/TOGGLE');
     service.send({
-      type: 'FILTER_BY_COUNTRY',
-      country: country2,
+      type: 'COUNTRY/INPUT',
+      input: country2,
     });
 
     await throttle();
+    await waitForNext();
 
     actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toEqual(
@@ -87,13 +112,14 @@ describe.concurrent('Working', () => {
   test.concurrent('It will filter by type', async () => {
     const propertyType = 'Apartment';
 
-    service.send('TOGGLE_DROPDOWN_TYPE');
+    service.send('TYPE/TOGGLE');
     service.send({
-      type: 'FILTER_BY_TYPE',
-      propertyType,
+      type: 'TYPE/INPUT',
+      input: propertyType,
     });
 
     await throttle();
+    await waitForNext();
 
     const actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toEqual(
@@ -105,13 +131,14 @@ describe.concurrent('Working', () => {
     const propertyType1 = 'Apartment';
     const propertyType2 = 'House';
 
-    service.send('TOGGLE_DROPDOWN_TYPE');
+    service.send('TYPE/TOGGLE');
     service.send({
-      type: 'FILTER_BY_TYPE',
-      propertyType: propertyType1,
+      type: 'TYPE/INPUT',
+      input: propertyType1,
     });
 
     await throttle();
+    await waitForNext();
 
     let actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toEqual(
@@ -120,13 +147,14 @@ describe.concurrent('Working', () => {
 
     await waitForNext();
 
-    service.send('TOGGLE_DROPDOWN_TYPE');
+    service.send('TYPE/TOGGLE');
     service.send({
-      type: 'FILTER_BY_TYPE',
-      propertyType: propertyType2,
+      type: 'TYPE/INPUT',
+      input: propertyType2,
     });
 
     await throttle();
+    await waitForNext();
 
     actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toEqual(
@@ -138,17 +166,21 @@ describe.concurrent('Working', () => {
     const inferiorOrEqualTo = 200_000;
     const superiorOrEqualTo = 100_000;
 
-    // service.send('FOCUS_PRICE_INFERIOR');
+    // #region Senders
     service.send({
-      type: 'SET_PRICE_INFERIOR',
-      value: '' + inferiorOrEqualTo,
+      type: 'SUPERIOR_OR_EQUAL_TO/INPUT',
+      input: '' + superiorOrEqualTo,
     });
     await throttle();
+    await waitForNext();
     service.send({
-      type: 'SET_PRICE_SUPERIOR',
-      value: '' + superiorOrEqualTo,
+      type: 'INFERIOR_OR_EQUAL_TO/INPUT',
+      input: '' + inferiorOrEqualTo,
     });
+    // #endregion
+
     await throttle();
+    await waitForNext();
 
     const actual = service.getSnapshot().context.ui.data.filtered;
     expect(actual).toEqual(
@@ -167,17 +199,17 @@ describe.concurrent('Working', () => {
       const inferiorOrEqualTo2 = 100_000;
       const superiorOrEqualTo2 = 30_000;
 
+      // #region First Event
       service.send({
-        type: 'SET_PRICE_INFERIOR',
-        value: '' + inferiorOrEqualTo1,
+        type: 'SUPERIOR_OR_EQUAL_TO/INPUT',
+        input: '' + superiorOrEqualTo1,
+      });
+      service.send({
+        type: 'INFERIOR_OR_EQUAL_TO/INPUT',
+        input: '' + inferiorOrEqualTo1,
       });
       await throttle();
-      service.send({
-        type: 'SET_PRICE_SUPERIOR',
-        value: '' + superiorOrEqualTo1,
-      });
-
-      await throttle();
+      // #endregion
 
       let actual = service.getSnapshot().context.ui.data.filtered;
       expect(actual).toEqual(
@@ -187,14 +219,15 @@ describe.concurrent('Working', () => {
         )
       );
 
+      // #region Second Event
       await waitForNext();
-
       service.send({
-        type: 'SET_PRICE_INFERIOR',
-        value: '' + inferiorOrEqualTo2,
+        type: 'INFERIOR_OR_EQUAL_TO/INPUT',
+        input: '' + inferiorOrEqualTo2,
       });
-
       await throttle();
+      await waitForNext();
+      // #endregion
 
       actual = service.getSnapshot().context.ui.data.filtered;
       expect(actual).toEqual(
@@ -204,14 +237,15 @@ describe.concurrent('Working', () => {
         )
       );
 
+      // #region Thrid Event
       await waitForNext();
-
       service.send({
-        type: 'SET_PRICE_SUPERIOR',
-        value: '' + superiorOrEqualTo2,
+        type: 'SUPERIOR_OR_EQUAL_TO/INPUT',
+        input: '' + superiorOrEqualTo2,
       });
-
       await throttle();
+      await waitForNext();
+      // #endregion
 
       actual = service.getSnapshot().context.ui.data.filtered;
       expect(actual).toEqual(
@@ -230,34 +264,37 @@ describe.concurrent('Working', () => {
     const propertyType = 'Apartment';
 
     // #region Senders
+    // #region First Event
     service.send({
-      type: 'SET_PRICE_INFERIOR',
-      value: '' + inferiorOrEqualTo,
+      type: 'SUPERIOR_OR_EQUAL_TO/INPUT',
+      input: '' + superiorOrEqualTo,
     });
     service.send({
-      type: 'SET_PRICE_SUPERIOR',
-      value: '' + superiorOrEqualTo,
+      type: 'INFERIOR_OR_EQUAL_TO/INPUT',
+      input: '' + inferiorOrEqualTo,
     });
-
     await throttle();
-
-    service.send('TOGGLE_DROPDOWN_TYPE');
-    service.send({
-      type: 'FILTER_BY_TYPE',
-      propertyType,
-    });
-
-    await throttle();
-    // await sleep(200);
-
-    service.send('TOGGLE_DROPDOWN_COUNTRY');
-    service.send({
-      type: 'FILTER_BY_COUNTRY',
-      country,
-    });
+    await waitForNext();
     // #endregion
 
+    // #region Second Event
+    service.send('TYPE/TOGGLE');
+    service.send({
+      type: 'TYPE/INPUT',
+      input: propertyType,
+    });
     await throttle();
+    await waitForNext();
+    // #endregion
+
+    service.send('COUNTRY/TOGGLE');
+    service.send({
+      type: 'COUNTRY/INPUT',
+      input: country,
+    });
+    await throttle();
+    await waitForNext();
+    // #endregion
 
     const actual = service.getSnapshot().context.ui.data.filtered;
 
@@ -278,30 +315,30 @@ describe.concurrent('Working', () => {
     'It will filter only one request if all requests are sent at same time',
     async () => {
       const inferiorOrEqualTo = 100_000;
-      const superiorOrEqualTo = 20_000;
+      const superiorOrEqualTo = 30_000;
       const country = 'United States';
       const propertyType = 'Apartment';
 
       // #region Senders
       service.send({
-        type: 'SET_PRICE_INFERIOR',
-        value: '' + inferiorOrEqualTo,
+        type: 'INFERIOR_OR_EQUAL_TO/INPUT',
+        input: '' + inferiorOrEqualTo,
+      });
+      service.send({
+        type: 'SUPERIOR_OR_EQUAL_TO/INPUT',
+        input: '' + superiorOrEqualTo,
       });
       await throttle();
-      service.send({
-        type: 'SET_PRICE_SUPERIOR',
-        value: '' + superiorOrEqualTo,
-      });
-      await throttle();
+      await waitForNext();
 
       service.send({
-        type: 'FILTER_BY_TYPE',
-        propertyType,
+        type: 'TYPE/INPUT',
+        input: propertyType,
       });
 
       service.send({
-        type: 'FILTER_BY_COUNTRY',
-        country,
+        type: 'COUNTRY/INPUT',
+        input: country,
       });
       // #endregion
 

@@ -14,7 +14,7 @@ type Props = {
 export const Property: Component<Props> = ({ property }) => {
   return (
     <a
-      class='bg-white shadow-1 p-5 rounded-lg rounded-tl-[90px] w-full max-w-[352px] mx-auto cursor-pointer hover:shadow-2xl transition flex flex-col'
+      class='bg-white shadow-1 p-5 rounded-lg rounded-tl-[90px] w-full max-w-[352px] mx-auto cursor-pointer hover:shadow-2xl transition flex flex-col max-h-[556px]'
       href={`/properties/${property.id}`}
     >
       <img class='mb-8' src={removePublic(property.image)} alt='' />

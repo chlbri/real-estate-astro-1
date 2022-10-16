@@ -1,7 +1,6 @@
 /** @jsxImportSource solid-js */
 
 import { HomeIcon } from '@-components/shared/atoms/icons/Home';
-import { getLabel } from '@-hooks/helpers/getLabel';
 import type { Component } from 'solid-js';
 import { ArrowToggle } from '../molecules/ArrowToggle';
 import {
@@ -34,18 +33,18 @@ export const DropdownType: Component<Props> = ({}) => {
           'opacity-90 pointer-events-auto': canBeOpened(),
         }}
       >
-        {[undefined, ...getTypes()].map((propertyType) => (
+        {getTypes().map((propertyType) => (
           <li
             class='cursor-pointer transition hover:text-violet-500'
             onclick={() => {
               toggle();
-              filter({ propertyType });
+              filter(propertyType);
             }}
             classList={{
               'text-violet-900': isCurrent(propertyType),
             }}
           >
-            {getLabel(propertyType)}
+            {propertyType}
           </li>
         ))}
       </ul>

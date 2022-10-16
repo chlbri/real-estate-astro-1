@@ -1,8 +1,10 @@
-export type PropertyType = 'House' | 'Apartment';
+import type { ALL_OPTIONS } from '@-constants/strings';
+
+export type PropertyType = 'House' | 'Apartment' | typeof ALL_OPTIONS;
 
 export type Property = {
   id: number;
-  type: 'House' | 'Apartment';
+  type: PropertyType;
   name: string;
   description: string;
   image: string;

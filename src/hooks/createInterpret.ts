@@ -63,17 +63,29 @@ export function createInterpret<
     return memo;
   };
 
+  type Test<T> = T extends { type: string } & infer U
+    ? Required<U> extends Record<string, any>
+      ? Omit<U, 'type'>
+      : never
+    : never;
+
+  type Test2<T> = (
+    ...[event]: Test<T> extends never ? [] : [event: Test<T>]
+  ) => any;
+
+  type T1 = Test2<{ type: 'toto'; rr?: '' }>;
+  const func: T1 = () => {};
+  func({});
+
   const sender = <T extends TEvent['type']>(type: T) => {
-    type E = TEvent extends {
+    type E = TEvent extends infer U & {
       type: T;
-    } & infer U
-      ? U extends {}
-        ? Omit<U, 'type'>
-        : never
+    }
+      ? Omit<U, 'type'>
       : never;
 
     return (...[event]: E extends never ? [] : [event: E]) => {
-      const sendOptions: any = event ? { type, ...event } : { type };
+      const sendOptions: any = { type, ...event };
       service.send(sendOptions);
     };
   };

@@ -1,4 +1,4 @@
-import { context, sender } from '@-hooks/main.service';
+import { context, send } from '@-hooks/main.service';
 
 export const getCountries = context((context) => {
   const countries = context.cache.countries ?? [];
@@ -8,7 +8,6 @@ export const getCountries = context((context) => {
 export const getCurrent = context(
   (context) =>
     context.ui.dropdowns.country.current ??
-    context.ui.dropdowns.country.all ??
     context.ui.dropdowns.country.default
 );
 
@@ -17,9 +16,11 @@ export function isCurrent(country?: string) {
 }
 
 export const canBeOpened = context(
-  (context) => context.ui.dropdowns.country.open
+  (context) => !!context.ui.dropdowns.country.open
 );
 
-export const filter = sender('FILTER_BY_COUNTRY');
+export function filter(input?: string) {
+  return send({ type: 'COUNTRY/INPUT', input });
+}
 
-export const toggle = sender('TOGGLE_DROPDOWN_COUNTRY');
+export const toggle = () => send('COUNTRY/TOGGLE');
