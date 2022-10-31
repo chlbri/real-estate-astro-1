@@ -1,20 +1,20 @@
 /** @jsxImportSource solid-js */
 
+import { HomeIcon } from '../../_shared/atoms/icons/Home';
 import type { Component } from 'solid-js';
-import { LocationPin } from '../../shared/atoms/icons/LocationPin';
 import { ArrowToggle } from '../molecules/ArrowToggle';
 import {
   canBeOpened,
   filter,
-  getCountries,
   getCurrent,
+  getTypes,
   isCurrent,
   toggle,
-} from './DropdownCountry.hooks';
+} from './DropdownType.hooks';
 
 type Props = {};
 
-export const DropdownCountry: Component<Props> = ({}) => {
+export const DropdownType: Component<Props> = ({}) => {
   return (
     <div class='relative w-full lg:max-w-xs h-14 cursor-pointer px-2'>
       <button
@@ -23,8 +23,8 @@ export const DropdownCountry: Component<Props> = ({}) => {
         }}
         class='w-full text-left flex h-full px-[18px] border rounded-lg  items-center justify-between'
       >
-        <LocationPin />
-        <div class='text-[13px]'>{getCurrent()}</div>
+        <HomeIcon />
+        <div class='text-[13px]'> {getCurrent()}</div>
         <ArrowToggle open={canBeOpened} />
       </button>
       <ul
@@ -33,18 +33,18 @@ export const DropdownCountry: Component<Props> = ({}) => {
           'opacity-90 pointer-events-auto': canBeOpened(),
         }}
       >
-        {getCountries().map((input) => (
+        {getTypes().map((propertyType) => (
           <li
             class='cursor-pointer transition hover:text-violet-500'
             onclick={() => {
-              filter(input);
               toggle();
+              filter(propertyType);
             }}
             classList={{
-              'text-violet-900': isCurrent(input),
+              'text-violet-900': isCurrent(propertyType),
             }}
           >
-            {input}
+            {propertyType}
           </li>
         ))}
       </ul>

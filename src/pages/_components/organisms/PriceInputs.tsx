@@ -5,7 +5,6 @@ import {
   superiorOrEqualToID,
 } from '@-constants/strings';
 import type { Component } from 'solid-js';
-
 import { InputRange } from '../molecules/InputRange';
 import {
   getPriceInferiorOrEqual,

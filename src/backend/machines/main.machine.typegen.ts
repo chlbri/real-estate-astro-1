@@ -41,9 +41,6 @@ export interface Typegen0 {
       type: "error.platform.queryBuilderMachine";
       data: unknown;
     };
-    "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).waiting": {
-      type: "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).waiting";
-    };
     "xstate.init": { type: "xstate.init" };
   };
   invokeSrcNameMap: {
@@ -105,7 +102,7 @@ export interface Typegen0 {
       | ""
       | "done.invoke.(machine).rinit:invocation[0]"
       | "error.platform.(machine).rinit:invocation[0]";
-    hydrationMachine: "xstate.after(TIME_BETWEEN_REQUESTS)#(machine).waiting";
+    hydrationMachine: "HYDRATE";
     inputMachine:
       | "done.invoke.(machine).hydration:invocation[0]"
       | "done.invoke.(machine).starting:invocation[0]"
@@ -116,9 +113,7 @@ export interface Typegen0 {
   eventsCausingGuards: {
     isBrowser: "__RINIT__" | "done.invoke.(machine).starting:invocation[0]";
   };
-  eventsCausingDelays: {
-    TIME_BETWEEN_REQUESTS: "done.invoke.(machine).starting:invocation[0]";
-  };
+  eventsCausingDelays: {};
   matchesStates:
     | "hydration"
     | "idle"

@@ -1,5 +1,12 @@
 ---
-import Page from '@-components/Home/index.astro';
+import Header from './_components/molecules/Header.astro';
+import { Properties } from './_components/organisms/Properties';
+import { Search } from './_components/templates/Search';
+import MainLayout from './_shared/MainLayout.astro';
 ---
 
-<Page />
+<MainLayout title={'Home'}>
+  <Header />
+  <Search client:idle />
+  <Properties client:idle />
+</MainLayout>

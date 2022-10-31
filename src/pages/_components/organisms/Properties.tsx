@@ -1,7 +1,7 @@
 /** @jsxImportSource solid-js */
 
-import { Spinner } from '@-components/shared/atoms/Spinner';
 import { Component, For } from 'solid-js';
+import { Spinner } from '../../_shared/atoms/Spinner';
 import { Property } from '../molecules/Property';
 import { getFilteredData, isBusy } from './Properties.hooks';
 
