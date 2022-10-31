@@ -1,8 +1,8 @@
 /** @jsxImportSource solid-js */
 
-import { ArrowDown } from '@-components/shared/atoms/icons/ArrowDown';
-import { ArrowUp } from '@-components/shared/atoms/icons/ArrowUp';
 import type { Accessor, Component } from 'solid-js';
+import { ArrowDown } from '../../_shared/atoms/icons/ArrowDown';
+import { ArrowUp } from '../../_shared/atoms/icons/ArrowUp';
 
 type Props = {
   open: Accessor<boolean>;

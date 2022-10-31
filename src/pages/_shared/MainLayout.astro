@@ -7,7 +7,7 @@ export type Props = {
   lang?: string;
 };
 
-const { title = 'test', lang = 'en' } = Astro.props as Props;
+const { title = 'test', lang = 'en' } = Astro.props;
 ---
 
 <html {...{lang}}>

@@ -2,10 +2,10 @@
 
 import type { Property as P } from '@-backend/data/main';
 import { removePublic } from '@-backend/data/removePublic';
-import { AreaIcon } from '@-components/shared/atoms/icons/Area';
-import { BathIcon } from '@-components/shared/atoms/icons/Bath';
-import { BedIcon } from '@-components/shared/atoms/icons/Bed';
 import type { Component } from 'solid-js';
+import { AreaIcon } from '../../_shared/atoms/icons/Area';
+import { BathIcon } from '../../_shared/atoms/icons/Bath';
+import { BedIcon } from '../../_shared/atoms/icons/Bed';
 
 type Props = {
   property: P;

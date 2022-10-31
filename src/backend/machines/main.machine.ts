@@ -1,5 +1,4 @@
 import { MAIN_DATA, Property, PropertyType } from '@-backend/data/main';
-import { TIME_BETWEEN_REQUESTS } from '@-constants/numbers';
 import { EVENTS, MACHINES } from '@-constants/objects';
 import { ALL_OPTIONS, LOCAL_STORAGE_ID } from '@-constants/strings';
 import { isBrowser } from '@-utils/environment';
@@ -69,6 +68,7 @@ export type Events =
         | 'RESET_INPUTS'
         | 'COUNTRY/TOGGLE'
         | 'TYPE/TOGGLE'
+        | 'HYDRATE'
         | 'START_QUERY';
     }
   | {
@@ -157,8 +157,8 @@ export const machine = createMachine(
       },
       waiting: {
         tags: ['busy'],
-        after: {
-          TIME_BETWEEN_REQUESTS: 'hydration',
+        on: {
+          HYDRATE: 'hydration',
         },
       },
       hydration: {
@@ -509,10 +509,6 @@ export const machine = createMachine(
       resestLocalQuery: async () => {
         localStorage.removeItem(LOCAL_STORAGE_ID);
       },
-    },
-
-    delays: {
-      TIME_BETWEEN_REQUESTS,
     },
   }
 );

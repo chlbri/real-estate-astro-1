@@ -54,7 +54,7 @@ export function createInterpret<
       createMemo(
         () =>
           !!accessor
-            ? accessor(store().context)
+            ? accessor(store()?.context)
             : (store().context as unknown as T),
         undefined,
         { equals }
@@ -78,10 +78,10 @@ export function createInterpret<
   func({});
 
   const sender = <T extends TEvent['type']>(type: T) => {
-    type E = TEvent extends infer U & {
+    type E = TEvent extends {
       type: T;
     }
-      ? Omit<U, 'type'>
+      ? Omit<TEvent, 'type'>
       : never;
 
     return (...[event]: E extends never ? [] : [event: E]) => {
