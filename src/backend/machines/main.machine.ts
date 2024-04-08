@@ -419,9 +419,9 @@ export const machine = createMachine(
       hydrationMachine,
 
       generateLists: async () => {
-        const types = new Set(MAIN_DATA.map((data) => data.type));
+        const types = new Set(MAIN_DATA.map(({ type }) => type));
         types.add(ALL_OPTIONS);
-        const countries = new Set(MAIN_DATA.map((data) => data.country));
+        const countries = new Set(MAIN_DATA.map(({ country }) => country));
         countries.add(ALL_OPTIONS);
         return { types, countries };
       },
