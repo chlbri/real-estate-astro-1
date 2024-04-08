@@ -1,4 +1,4 @@
-import { send } from '@-hooks/main.service';
+import { send } from '@-backend/main.service';
 
 export function rinit() {
   return send('__RINIT__');

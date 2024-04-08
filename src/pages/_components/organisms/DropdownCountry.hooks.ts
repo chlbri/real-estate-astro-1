@@ -1,4 +1,4 @@
-import { context, send } from '@-hooks/main.service';
+import { context, send } from '@-backend/main.service';
 
 export const getCountries = context((context) => {
   const countries = context.cache.countries ?? [];

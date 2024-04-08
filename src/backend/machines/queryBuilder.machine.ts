@@ -99,9 +99,11 @@ export const queryBuilderMachine = createMachine(
         };
       }),
 
+      // #region Errors
       errorNotDefined: escalate(ERRORS.QUERY.NOT_DEFINED),
       errorEquals: escalate(ERRORS.QUERY.ARE_EQUALS),
       errorFormat: escalate(ERRORS.QUERY.FORMAT),
+      // #endregion
     },
     guards: {
       currentIsNotDefined: ({ currentQuery }) => !currentQuery,
@@ -122,6 +124,9 @@ export const queryBuilderMachine = createMachine(
           !isInputNumber(inferiorOrEqualTo);
         const superiorIsNotWellFormated =
           !isInputNumber(superiorOrEqualTo);
+
+        const check =
+          inferiorIsNotWellFormated || superiorIsNotWellFormated;
 
         return inferiorIsNotWellFormated || superiorIsNotWellFormated;
       },

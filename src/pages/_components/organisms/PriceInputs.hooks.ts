@@ -1,4 +1,4 @@
-import { context, send } from '@-hooks/main.service';
+import { context, send } from '@-backend/main.service';
 
 export function setPriceInferiorOrEqual(input?: string) {
   return send({ type: 'INFERIOR_OR_EQUAL_TO/INPUT', input });
@@ -15,3 +15,5 @@ export function setPriceSuperiorOrEqual(input?: string) {
 export const getPriceSuperiorOrEqual = context(
   (context) => context.ui.inputs.price.superiorOrEqualTo.current ?? ''
 );
+
+

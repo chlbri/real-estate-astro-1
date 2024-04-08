@@ -3,7 +3,7 @@ import { LOCAL_STORAGE_ID } from '@-constants/strings';
 import { assign } from '@xstate/immer';
 import { createMachine } from 'xstate';
 import { escalate, send } from 'xstate/lib/actions';
-import { filterMachine, QueryFilter } from './filter.machine';
+import { QueryFilter, filterMachine } from './filter.machine';
 import { BeforeQuery, queryBuilderMachine } from './queryBuilder.machine';
 
 type Context = {

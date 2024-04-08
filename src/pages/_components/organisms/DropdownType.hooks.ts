@@ -1,4 +1,4 @@
-import { context, send, sender } from '@-hooks/main.service';
+import { context, send, sender } from '@-backend/main.service';
 
 export const getTypes = context((context) => {
   const types = context.cache.types ?? [];

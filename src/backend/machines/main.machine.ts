@@ -6,90 +6,11 @@ import { assign } from '@xstate/immer';
 import { createMachine } from 'xstate';
 import { forwardTo, send } from 'xstate/lib/actions';
 import { dropdownMachine } from './dropdown.machine';
-import { filterMachine, QueryFilter } from './filter.machine';
+import { QueryFilter, filterMachine } from './filter.machine';
 import { hydrationMachine } from './hydration.machine';
 import { inputMachine } from './input.machine';
-import { BeforeQuery, queryBuilderMachine } from './queryBuilder.machine';
-
-type HydrationData = {
-  filtered?: Property[];
-  currentQuery: BeforeQuery;
-};
-
-export type Context = {
-  cache: {
-    countries?: Set<string>;
-    types?: Set<PropertyType>;
-    query?: QueryFilter;
-    lastQueryDate?: number;
-  };
-  ui: {
-    dropdowns: {
-      country: {
-        current?: string;
-        open?: boolean;
-        default: string;
-      };
-      type: {
-        current?: string;
-        open?: boolean;
-        default: string;
-      };
-    };
-    inputs: {
-      price: {
-        inferiorOrEqualTo: {
-          current?: string;
-          default: string;
-        };
-        superiorOrEqualTo: {
-          current?: string;
-          default: string;
-        };
-      };
-    };
-    data: {
-      filtered?: Property[];
-      currentQuery?: BeforeQuery;
-      previousQuery?: BeforeQuery;
-    };
-    timeouts: {
-      inferiorFocusInterval?: ReturnType<typeof setTimeout>;
-      superiorFocusInterval?: ReturnType<typeof setTimeout>;
-    };
-  };
-};
-
-// #region Events
-export type Events =
-  | {
-      type:
-        | '__RINIT__'
-        | 'RESET_INPUTS'
-        | 'COUNTRY/TOGGLE'
-        | 'TYPE/TOGGLE'
-        | 'HYDRATE'
-        | 'START_QUERY';
-    }
-  | {
-      type: 'CHILD/COUNTRY/TOGGLE' | 'CHILD/TYPE/TOGGLE';
-      open?: boolean;
-    }
-  | { type: 'QUERY'; query?: BeforeQuery }
-  | {
-      type:
-        | 'COUNTRY/INPUT'
-        | 'CHILD/COUNTRY/INPUT'
-        | 'TYPE/INPUT'
-        | 'CHILD/TYPE/INPUT'
-        | 'SUPERIOR_OR_EQUAL_TO/INPUT'
-        | 'CHILD/SUPERIOR_OR_EQUAL_TO/INPUT'
-        | 'INFERIOR_OR_EQUAL_TO/INPUT'
-        | 'CHILD/INFERIOR_OR_EQUAL_TO/INPUT';
-
-      input?: string;
-    };
-// #endregion
+import { Context, Events, HydrationData } from './main.machine.types';
+import { queryBuilderMachine } from './queryBuilder.machine';
 
 export const machine = createMachine(
   {
@@ -132,6 +53,7 @@ export const machine = createMachine(
       idle: {
         always: 'starting',
       },
+
       rinit: {
         invoke: {
           src: 'resestLocalQuery',
@@ -139,12 +61,13 @@ export const machine = createMachine(
           onError: { target: 'starting' },
         },
       },
+
       starting: {
         invoke: {
           src: 'generateLists',
           onDone: [
             {
-              target: 'waiting',
+              target: 'hydration',
               cond: 'isBrowser',
               actions: ['generateLists', 'resetInputs'],
             },
@@ -155,12 +78,7 @@ export const machine = createMachine(
           ],
         },
       },
-      waiting: {
-        tags: ['busy'],
-        on: {
-          HYDRATE: 'hydration',
-        },
-      },
+
       hydration: {
         tags: ['busy'],
         invoke: {
@@ -169,9 +87,13 @@ export const machine = createMachine(
             target: 'working',
             actions: ['hydrate'],
           },
-          onError: 'working',
+          onError: {
+            target: 'working',
+            actions: ['resetFiltered'],
+          },
         },
       },
+
       working: {
         id: 'working',
         on: {
@@ -342,13 +264,12 @@ export const machine = createMachine(
   },
   {
     actions: {
-      // #region Begining
       resetCache: assign((context) => {
         context.cache = {};
       }),
 
       resetFiltered: assign((context) => {
-        context.ui.data.filtered = undefined;
+        context.ui.data.filtered = MAIN_DATA;
       }),
 
       resetInputs: assign((context) => {
@@ -376,7 +297,6 @@ export const machine = createMachine(
         context.ui.inputs.price.superiorOrEqualTo.current =
           data?.currentQuery.superiorOrEqualTo;
       }),
-      // #endregion
 
       // #region Country
       assignInputCountry: assign((context, { input }) => {
@@ -477,7 +397,7 @@ export const machine = createMachine(
       }),
 
       filter: assign((context, { data }) => {
-        context.ui.data.filtered = data;
+        context.ui.data.filtered = data ?? MAIN_DATA;
       }),
 
       resetQuery: assign((context) => {

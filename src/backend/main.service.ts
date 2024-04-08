@@ -1,5 +1,5 @@
 import { machine } from '@-backend/machines/main.machine';
-import { createInterpret } from './createInterpret';
+import { createInterpret } from '../hooks/createInterpret';
 
 export const { sender, context, matches, subscribe, hasTag, send } =
   createInterpret(
