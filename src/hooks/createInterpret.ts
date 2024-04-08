@@ -1,8 +1,10 @@
 import { Accessor, createMemo, createRoot, from } from 'solid-js';
 import {
+  AreAllImplementationsAssumedToBeProvided,
   BaseActionObject,
   EventObject,
-  interpret,
+  InterpreterOptions,
+  MissingImplementationsError,
   NoInfer,
   Prop,
   ResolveTypegenMeta,
@@ -12,6 +14,7 @@ import {
   TypegenDisabled,
   TypegenEnabled,
   Typestate,
+  interpret,
 } from 'xstate';
 import { matches } from './helpers/matches';
 
@@ -31,17 +34,20 @@ export function createInterpret<
     TServiceMap
   >
 >(
-  machine: StateMachine<
-    TContext,
-    any,
-    TEvent,
-    TTypestate,
-    TAction,
-    TServiceMap,
-    TResolvedTypesMeta
-  >
+  machine: AreAllImplementationsAssumedToBeProvided<TResolvedTypesMeta> extends true
+    ? StateMachine<
+        TContext,
+        any,
+        TEvent,
+        TTypestate,
+        any,
+        any,
+        TResolvedTypesMeta
+      >
+    : MissingImplementationsError<TResolvedTypesMeta>,
+  options?: InterpreterOptions
 ) {
-  const service = interpret(machine);
+  const service = interpret(machine, options);
   const store = createRoot(() => from(service.start())) as Accessor<
     State<TContext, TEvent, any, TTypestate, TResolvedTypesMeta>
   >;

@@ -15,8 +15,8 @@ dependencies:
     specifier: ^0.1.6
     version: 0.1.6
   '@xstate/immer':
-    specifier: ^0.3.1
-    version: 0.3.1(immer@9.0.15)(xstate@4.38.3)
+    specifier: ^0.3.3
+    version: 0.3.3(immer@9.0.21)(xstate@4.38.3)
   astro:
     specifier: ^1.5.0
     version: 1.5.0
@@ -24,8 +24,8 @@ dependencies:
     specifier: ^2.0.3
     version: 2.0.3
   immer:
-    specifier: ^9.0.15
-    version: 9.0.15
+    specifier: ^9.0.21
+    version: 9.0.21
   solid-js:
     specifier: ^1.5.7
     version: 1.5.7
@@ -681,13 +681,13 @@ packages:
       vscode-uri: 2.1.2
     dev: false
 
-  /@xstate/immer@0.3.1(immer@9.0.15)(xstate@4.38.3):
-    resolution: {integrity: sha512-YE+KY08IjEEmXo6XKKpeSGW4j9LfcXw+5JVixLLUO3fWQ3M95joWJ40VtGzx0w0zQSzoCNk8NgfvwWBGSbIaTA==}
+  /@xstate/immer@0.3.3(immer@9.0.21)(xstate@4.38.3):
+    resolution: {integrity: sha512-6AcNYkWdQrU+BKRg0MVjC2HBRZrZWADHJXcUL9uXem4BFpw9qy9NlbLPWkvnDayvmUq2sbYrzWTfxBMaiOhe5A==}
     peerDependencies:
-      immer: ^9.0.6
-      xstate: ^4.29.0
+      immer: ^9.0.6 || ^10
+      xstate: ^4.37.2
     dependencies:
-      immer: 9.0.15
+      immer: 9.0.21
       xstate: 4.38.3
     dev: false
 
@@ -2041,8 +2041,8 @@ packages:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
     dev: false
 
-  /immer@9.0.15:
-    resolution: {integrity: sha512-2eB/sswms9AEUSkOm4SbV5Y7Vmt/bKRwByd52jfLkW4OLYeaTP3EEiJ9agqU0O/tq6Dk62Zfj+TJSqfm1rLVGQ==}
+  /immer@9.0.21:
+    resolution: {integrity: sha512-bc4NBHqOqSfRW7POMkHd51LvClaeMXpm8dx0e8oE2GORbq5aRK7Bxl4FyzVLdGtLmvLKL7BTDBG5ACQm4HWjTA==}
     dev: false
 
   /import-meta-resolve@2.1.0:
