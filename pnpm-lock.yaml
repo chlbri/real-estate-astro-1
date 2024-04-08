@@ -58,9 +58,6 @@ devDependencies:
   vitest:
     specifier: ^0.24.3
     version: 0.24.3
-  ws:
-    specifier: ^8.9.0
-    version: 8.9.0
 
 packages:
 
