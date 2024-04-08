@@ -16,7 +16,7 @@ export const machine = createMachine(
   {
     predictableActionArguments: true,
     preserveActionOrder: true,
-    tsTypes: {} as import('./main.machine.typegen').Typegen0,
+    tsTypes: {} as import('./main.machine.typegen.d.ts').Typegen0,
     schema: {
       context: {} as Context,
       events: {} as Events,

@@ -28,7 +28,7 @@ export const filterMachine = createMachine(
   {
     predictableActionArguments: true,
     preserveActionOrder: true,
-    tsTypes: {} as import('./filter.machine.typegen').Typegen0,
+    tsTypes: {} as import('./filter.machine.typegen.d.ts').Typegen0,
     schema: {
       context: {} as Context,
       services: {} as {
