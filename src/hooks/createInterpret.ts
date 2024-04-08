@@ -1,49 +1,73 @@
 import { Accessor, createMemo, createRoot, from } from 'solid-js';
 import {
-  BaseActionObject,
+  ActorOptions,
+  AnyActorLogic,
+  AnyActorRef,
+  ConditionalRequired,
   EventObject,
-  interpret,
-  NoInfer,
-  Prop,
-  ResolveTypegenMeta,
-  ServiceMap,
-  State,
+  InputFrom,
+  IsNotNever,
+  MachineContext,
+  MachineSnapshot,
+  ParameterizedObject,
+  ProvidedActor,
   StateMachine,
-  TypegenDisabled,
-  TypegenEnabled,
-  Typestate,
+  StateValue,
+  createActor,
 } from 'xstate';
 import { matches } from './helpers/matches';
 
+type RequiredOptions<TLogic extends AnyActorLogic> =
+  undefined extends InputFrom<TLogic> ? never : 'input';
+
 export function createInterpret<
-  TContext,
-  TEvent extends EventObject = EventObject,
-  TTypestate extends Typestate<TContext> = {
-    value: any;
-    context: TContext;
-  },
-  TAction extends BaseActionObject = BaseActionObject,
-  TServiceMap extends ServiceMap = ServiceMap,
-  TResolvedTypesMeta = ResolveTypegenMeta<
-    TypegenDisabled,
-    NoInfer<TEvent>,
-    TAction,
-    TServiceMap
-  >
+  TContext extends MachineContext,
+  TEvent extends EventObject,
+  TChildren extends Record<string, AnyActorRef | undefined>,
+  TActor extends ProvidedActor,
+  TAction extends ParameterizedObject,
+  TGuard extends ParameterizedObject,
+  TDelay extends string,
+  TStateValue extends StateValue,
+  TTag extends string,
+  TInput,
+  TOutput,
+  TEmitted extends EventObject = EventObject
 >(
   machine: StateMachine<
     TContext,
-    any,
     TEvent,
-    TTypestate,
+    TChildren,
+    TActor,
     TAction,
-    TServiceMap,
-    TResolvedTypesMeta
+    TGuard,
+    TDelay,
+    TStateValue,
+    TTag,
+    TInput,
+    TOutput,
+    TEmitted
+  >,
+  ...[options]: ConditionalRequired<
+    [
+      options?: ActorOptions<typeof machine> & {
+        [K in RequiredOptions<typeof machine>]: unknown;
+      }
+    ],
+    IsNotNever<RequiredOptions<typeof machine>>
   >
 ) {
-  const service = interpret(machine);
+  const service = createActor(machine, options);
+  service.start();
   const store = createRoot(() => from(service.start())) as Accessor<
-    State<TContext, TEvent, any, TTypestate, TResolvedTypesMeta>
+    MachineSnapshot<
+      TContext,
+      TEvent,
+      TChildren,
+      TStateValue,
+      TTag,
+      TOutput
+    >
   >;
 
   const context = <T>(
@@ -90,17 +114,14 @@ export function createInterpret<
     };
   };
 
+  store().value;
   const output = {
     send: service.send,
     sender,
     subscribe: service.subscribe.bind(service),
-    matches: matches(store().value),
+    matches: matches(store().value as any),
     context,
-    hasTag: (
-      value: TResolvedTypesMeta extends TypegenEnabled
-        ? Prop<Prop<TResolvedTypesMeta, 'resolved'>, 'tags'>
-        : string
-    ) => store().hasTag(value),
+    hasTag: (value: TTag) => store().hasTag(value),
   } as const;
 
   return output;

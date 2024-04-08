@@ -1,8 +1,12 @@
 import { EVENTS } from '@-constants/objects';
 import { DEFAULT_EVENT_DELIMITER } from '@-constants/strings';
-import { assign } from '@xstate/immer';
-import { createMachine, sendParent } from 'xstate';
-import { forwardTo } from 'xstate/lib/actions';
+import {
+  ActorLogicFrom,
+  assign,
+  createMachine,
+  forwardTo,
+  sendParent,
+} from 'xstate';
 import { inputMachine } from './input.machine';
 
 export type Context = {
@@ -16,15 +20,14 @@ export type Events =
 
 export const dropdownMachine = createMachine(
   {
-    predictableActionArguments: true,
-    preserveActionOrder: true,
-    tsTypes: {} as import('./dropdown.machine.typegen').Typegen0,
-    schema: {
-      context: {} as Context,
+    context: {} as Context,
+    types: {
       events: {} as Events,
-      services: {} as {
-        inputMachine: { data: void };
+      actors: {} as {
+        src: 'inputMachine';
+        logic: ActorLogicFrom<typeof inputMachine>;
       },
+      typegen: {} as import('./dropdown.machine.typegen').Typegen0,
     },
 
     initial: 'idle',
@@ -42,7 +45,7 @@ export const dropdownMachine = createMachine(
         invoke: {
           id: 'inputMachine',
           src: 'inputMachine',
-          data: () => ({
+          input: () => ({
             name: EVENTS.INPUT,
           }),
         },
@@ -63,24 +66,27 @@ export const dropdownMachine = createMachine(
     actions: {
       input: forwardTo('inputMachine'),
 
-      sendParentToggle: sendParent(({ name, open }) => ({
+      sendParentToggle: sendParent(({ context: { name, open } }) => ({
         type: `CHILD${DEFAULT_EVENT_DELIMITER}${name}${DEFAULT_EVENT_DELIMITER}${EVENTS.TOGGLE}`,
         open,
       })),
 
-      sendParentInput: sendParent(({ name }, { input }) => ({
-        type: `CHILD${DEFAULT_EVENT_DELIMITER}${name}${DEFAULT_EVENT_DELIMITER}${EVENTS.INPUT}`,
-        input,
-      })),
+      sendParentInput: sendParent(
+        ({ context: { name }, event: { input } }) => ({
+          type: `CHILD${DEFAULT_EVENT_DELIMITER}${name}${DEFAULT_EVENT_DELIMITER}${EVENTS.INPUT}`,
+          input,
+        })
+      ),
 
-      startQuery: sendParent('START_QUERY'),
+      startQuery: sendParent({ type: 'START_QUERY' }),
 
-      toggle: assign((context) => {
-        context.open = !context.open;
-      }),
+      // toggle: assign((context) => {
+      //   context.open = !context.open;
+      // }),
+      toggle: assign({ open: ({ context: { open } }) => !open }),
     },
 
-    services: {
+    actors: {
       inputMachine,
     },
   }
