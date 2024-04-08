@@ -22,7 +22,7 @@ export const queryBuilderMachine = createMachine(
   {
     predictableActionArguments: true,
     preserveActionOrder: true,
-    tsTypes: {} as import('./queryBuilder.machine.typegen').Typegen0,
+    tsTypes: {} as import("./queryBuilder.machine.typegen.d.ts").Typegen0 ,
     schema: {
       context: {} as Context,
       events: {} as { type: 'QUERY'; query?: BeforeQuery },
