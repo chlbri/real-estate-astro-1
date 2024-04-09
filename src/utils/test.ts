@@ -8,5 +8,4 @@ export async function incrementByTime(clock: SimulatedClock, ms: number) {
   return Promise.resolve().then(() => {
     clock.increment(ms);
   });
-  // clock.setTimeout(() => {}, ms);
 }
