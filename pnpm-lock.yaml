@@ -40,6 +40,9 @@ devDependencies:
   '@babel/core':
     specifier: ^7.19.3
     version: 7.19.3
+  '@bemedev/x-test':
+    specifier: ^0.5.0
+    version: 0.5.0(xstate@4.38.3)
   '@xstate/inspect':
     specifier: ^0.7.0
     version: 0.7.0(ws@8.9.0)(xstate@4.38.3)
@@ -417,7 +420,25 @@ packages:
   /@bemedev/decompose@0.1.6:
     resolution: {integrity: sha512-l2hxdLELzOQNEzdic5kwN3issGGbAGDI84qvUIGy4+LZES8sARYoklBSUay5x0rn4ZogsmlNdYHSZ4w9IRhZOQ==}
     engines: {node: '>=12'}
-    dev: false
+
+  /@bemedev/x-matches@0.0.3:
+    resolution: {integrity: sha512-HdFJrJPG4WKrskoeHvOqqjyep1PeqVgw33BZ2iDXCKtFQOFzrFkbiRP/ksFmw3IFTNFbXDUq88xiinVWz9QeoQ==}
+    engines: {node: '>=12'}
+    dependencies:
+      '@bemedev/decompose': 0.1.6
+    dev: true
+
+  /@bemedev/x-test@0.5.0(xstate@4.38.3):
+    resolution: {integrity: sha512-mpWyAQ6YIHMztOVcj2lChFD1SbWmdNV5B75gT5CLvOg6JFebHV68y9xNgTxkUq0hZzizsOhQFJYbOWTlTc1u3Q==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      xstate: ^4.30.6
+    dependencies:
+      '@bemedev/x-matches': 0.0.3
+      deepmerge: 4.2.2
+      dequal: 2.0.3
+      xstate: 4.38.3
+    dev: true
 
   /@cush/relative@1.0.0:
     resolution: {integrity: sha512-RpfLEtTlyIxeNPGKcokS+p3BZII/Q3bYxryFRglh5H3A3T8q9fsLYm72VYAMEOOIBLEa8o93kFLiBDUWKrwXZA==}
@@ -1169,7 +1190,6 @@ packages:
   /deepmerge@4.2.2:
     resolution: {integrity: sha512-FJ3UgI4gIl+PHZm53knsuSFpE+nESMr7M4v9QcgB7S63Kj/6WqMiFQJpBBYz1Pt+66bZpP3Q7Lye0Oo9MPKEdg==}
     engines: {node: '>=0.10.0'}
-    dev: false
 
   /defaults@1.0.4:
     resolution: {integrity: sha512-eFuaLoy/Rxalv2kr+lqMlUnrDWV+3j4pljOIJgLIhI058IQfWJ7vXhyEIHu+HtC738klGALYxOKDO0bQP3tg8A==}
@@ -1196,7 +1216,6 @@ packages:
   /dequal@2.0.3:
     resolution: {integrity: sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA==}
     engines: {node: '>=6'}
-    dev: false
 
   /detect-node@2.1.0:
     resolution: {integrity: sha512-T0NIuQpnTvFDATNuHN5roPwSBG83rFsuO+MXXH9/3N1eFbn4wcPjttvjMLEPWJ0RGUYgQE7cGgS3tNxbqCGM7g==}

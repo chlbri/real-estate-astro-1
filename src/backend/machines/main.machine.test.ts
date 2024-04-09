@@ -52,8 +52,6 @@ describe('Working', () => {
 
   beforeEach(async () => {
     service.send('__RINIT__');
-    await throttle();
-    await waitForNext();
   });
 
   test('It will filter by country', async () => {
@@ -286,6 +284,7 @@ describe('Working', () => {
     await waitForNext();
     // #endregion
 
+    // #region Third Event
     service.send('COUNTRY/TOGGLE');
     service.send({
       type: 'COUNTRY/INPUT',
@@ -293,6 +292,8 @@ describe('Working', () => {
     });
     await throttle();
     await waitForNext();
+    // #endregion
+
     // #endregion
 
     const actual = service.getSnapshot().context.ui.data.filtered;
@@ -326,7 +327,7 @@ describe('Working', () => {
       input: '' + superiorOrEqualTo,
     });
     await throttle();
-    await waitForNext();
+    // await waitForNext();
 
     service.send({
       type: 'TYPE/INPUT',
@@ -339,7 +340,7 @@ describe('Working', () => {
     });
     // #endregion
 
-    await advanceByTime(0);
+    await waitForNext();
 
     const actual = service.getSnapshot().context.ui.data.filtered;
     const expected = MAIN_DATA.filter(({ price }) => {
