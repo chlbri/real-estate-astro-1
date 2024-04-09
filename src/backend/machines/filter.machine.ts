@@ -89,17 +89,27 @@ export const filterMachine = createMachine(
         inferiorOrEqualTo,
         superiorOrEqualTo,
       }) => {
-        const out = MAIN_DATA.filter(
-          ({ country, type, price }) =>
-            (!currentCountry ||
-              currentCountry === ALL_OPTIONS ||
-              country === currentCountry) &&
-            (!currentType ||
-              currentType === ALL_OPTIONS ||
-              type === currentType) &&
-            (!inferiorOrEqualTo || price <= inferiorOrEqualTo) &&
-            (superiorOrEqualTo === undefined || price >= superiorOrEqualTo)
-        );
+        const out = MAIN_DATA.filter(({ country, type, price }) => {
+          const isCountry =
+            !currentCountry ||
+            currentCountry === ALL_OPTIONS ||
+            country === currentCountry;
+
+          const isType =
+            !currentType ||
+            currentType === ALL_OPTIONS ||
+            type === currentType;
+
+          const isPrice =
+            (inferiorOrEqualTo === undefined ||
+              price <= inferiorOrEqualTo) &&
+            (superiorOrEqualTo === undefined ||
+              price >= superiorOrEqualTo);
+
+          const check = isCountry && isType && isPrice;
+
+          return check;
+        });
 
         return out;
       },

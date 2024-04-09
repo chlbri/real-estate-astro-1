@@ -10,7 +10,8 @@
     "preview": "astro preview",
     "rm": "rm -rf node_modules pnpm-lock.yaml",
     "clean": "pnpm run rm && pnpm install",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test-watch": "vitest"
   },
   "dependencies": {
     "@astrojs/solid-js": "^1.2.0",

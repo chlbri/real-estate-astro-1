@@ -56,13 +56,14 @@ export const machine = createMachine(
 
       rinit: {
         invoke: {
-          src: 'resestLocalQuery',
-          onDone: { target: 'starting', actions: ['resetFiltered'] },
+          src: 'resetLocalQuery',
+          onDone: { target: 'starting' },
           onError: { target: 'starting' },
         },
       },
 
       starting: {
+        entry: ['resetFiltered'],
         invoke: {
           src: 'generateLists',
           onDone: [
@@ -426,7 +427,7 @@ export const machine = createMachine(
         return { types, countries };
       },
 
-      resestLocalQuery: async () => {
+      resetLocalQuery: async () => {
         localStorage.removeItem(LOCAL_STORAGE_ID);
       },
     },
