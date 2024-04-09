@@ -1,7 +1,8 @@
 import { MAIN_DATA } from '@-backend/data/main';
 import { THROTTLE_TIME, TIME_BETWEEN_REQUESTS } from '@-constants/numbers';
-import { advanceByTime } from '@-utils/test';
+import { incrementByTime } from '@-utils/test';
 import { interpret } from 'xstate';
+import { SimulatedClock } from 'xstate/lib/SimulatedClock';
 import { machine as machine1 } from './main.machine';
 
 const machine = machine1.withContext({
@@ -37,21 +38,25 @@ describe('Acceptation', () => {
 });
 
 describe('Working', () => {
-  const service = interpret(machine);
-  const throttle = () => advanceByTime(THROTTLE_TIME * 2);
-  const waitForNext = () => advanceByTime(TIME_BETWEEN_REQUESTS + 1);
+  const clock = new SimulatedClock();
+  const service = interpret(machine, { clock });
+  const throttle = (length = 1) => {
+    const inc = () => incrementByTime(clock, THROTTLE_TIME + 1);
+    const incs = Array.from({ length }).fill(
+      inc
+    ) as (() => Promise<void>)[];
+    return Promise.all(incs.map((inc) => inc()));
+  };
+  const waitForNext = () =>
+    incrementByTime(clock, TIME_BETWEEN_REQUESTS + 1);
 
   beforeAll(() => {
-    vi.useFakeTimers();
     service.start();
-  });
-
-  afterAll(() => {
-    vi.useRealTimers();
   });
 
   beforeEach(async () => {
     service.send('__RINIT__');
+    await waitForNext();
   });
 
   test('It will filter by country', async () => {
@@ -171,14 +176,14 @@ describe('Working', () => {
       input: '' + superiorOrEqualTo,
     });
     await throttle();
-    await waitForNext();
+    // await waitForNext();
     service.send({
       type: 'INFERIOR_OR_EQUAL_TO/INPUT',
       input: '' + inferiorOrEqualTo,
     });
     // #endregion
 
-    await throttle();
+    await throttle(2);
     await waitForNext();
 
     const actual = service.getSnapshot().context.ui.data.filtered;
@@ -210,15 +215,13 @@ describe('Working', () => {
     // #endregion
 
     let actual = service.getSnapshot().context.ui.data.filtered;
-    expect(actual).toEqual(
-      MAIN_DATA.filter(
-        ({ price }) =>
-          price >= superiorOrEqualTo1 && price <= inferiorOrEqualTo1
-      )
+    let expected = MAIN_DATA.filter(
+      ({ price }) =>
+        price >= superiorOrEqualTo1 && price <= inferiorOrEqualTo1
     );
+    expect(actual).toEqual(expected);
 
     // #region Second Event
-    await waitForNext();
     service.send({
       type: 'INFERIOR_OR_EQUAL_TO/INPUT',
       input: '' + inferiorOrEqualTo2,
@@ -228,30 +231,32 @@ describe('Working', () => {
     // #endregion
 
     actual = service.getSnapshot().context.ui.data.filtered;
-    expect(actual).toEqual(
-      MAIN_DATA.filter(
-        ({ price }) =>
-          price >= superiorOrEqualTo1 && price <= inferiorOrEqualTo2
-      )
+    expected = MAIN_DATA.filter(
+      ({ price }) =>
+        price >= superiorOrEqualTo1 && price <= inferiorOrEqualTo2
     );
 
-    // #region Thrid Event
-    await waitForNext();
+    console.log('Expected 2:', expected.length);
+
+    expect(actual).toEqual(expected);
+
+    // #region Third Event
     service.send({
       type: 'SUPERIOR_OR_EQUAL_TO/INPUT',
       input: '' + superiorOrEqualTo2,
     });
-    await throttle();
+    await throttle(2);
     await waitForNext();
     // #endregion
 
     actual = service.getSnapshot().context.ui.data.filtered;
-    expect(actual).toEqual(
-      MAIN_DATA.filter(
-        ({ price }) =>
-          price >= superiorOrEqualTo2 && price <= inferiorOrEqualTo2
-      )
+    expected = MAIN_DATA.filter(
+      ({ price }) =>
+        price >= superiorOrEqualTo2 && price <= inferiorOrEqualTo2
     );
+    console.log('Expected 3:', expected.length);
+
+    expect(actual).toEqual(expected);
   });
 
   test('It will filter all', async () => {

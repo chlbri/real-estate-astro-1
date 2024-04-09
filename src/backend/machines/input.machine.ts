@@ -16,7 +16,7 @@ export const inputMachine = createMachine(
   {
     predictableActionArguments: true,
     preserveActionOrder: true,
-    tsTypes: {} as import('./input.machine.typegen').Typegen0,
+    tsTypes: {} as import('./input.machine.typegen.d.ts').Typegen0,
     schema: { context: {} as Context, events: {} as Events },
     initial: 'idle',
     on: {
@@ -42,6 +42,7 @@ export const inputMachine = createMachine(
           actions: ['startQuery'],
           target: 'idle',
         },
+        exit: 'resetInput',
       },
     },
   },
@@ -54,6 +55,10 @@ export const inputMachine = createMachine(
 
       resetEdititng: assign((context) => {
         context.editing = false;
+      }),
+
+      resetInput: assign((context) => {
+        context.input = undefined;
       }),
 
       sendParentInput: sendParent(({ name }, { input }) => ({
