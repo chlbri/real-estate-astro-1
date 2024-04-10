@@ -1,3 +1,4 @@
+import { diff } from 'jest-diff';
 import {
   AreAllImplementationsAssumedToBeProvided,
   BaseActionObject,
@@ -59,10 +60,20 @@ export function testInterpret<
 
   const context = <T>({ expected, accessor, equals }: ContextArgs<T>) => {
     const __context = _context(accessor, equals);
-    const actual = JSON.stringify(__context());
-    const _expected = JSON.stringify(expected);
+    const actual = JSON.stringify(__context(), null, 2);
+    const _expected = JSON.stringify(expected, null, 2);
+    const check = actual === _expected;
 
-    return actual === _expected;
+    if (!check) {
+      const difference = diff(actual, _expected, {
+        includeChangeCounts: true,
+      });
+      console.log('No Match !! =>');
+      console.log();
+      console.log(difference);
+    }
+
+    return !!check;
   };
 
   const advanceTime = async (ms = 0) => {
