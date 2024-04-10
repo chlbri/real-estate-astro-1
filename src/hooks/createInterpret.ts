@@ -11,6 +11,7 @@ import {
   ServiceMap,
   State,
   StateMachine,
+  StateValueFrom,
   TypegenDisabled,
   TypegenEnabled,
   Typestate,
@@ -58,30 +59,18 @@ export function createInterpret<
   ) => {
     const memo = createRoot(() =>
       createMemo(
-        () =>
-          !!accessor
+        () => {
+          const _accessor = !!accessor
             ? accessor(store()?.context)
-            : (store().context as unknown as T),
+            : (store().context as unknown as T);
+          return _accessor;
+        },
         undefined,
         { equals }
       )
     );
     return memo;
   };
-
-  type Test<T> = T extends { type: string } & infer U
-    ? Required<U> extends Record<string, any>
-      ? Omit<U, 'type'>
-      : never
-    : never;
-
-  type Test2<T> = (
-    ...[event]: Test<T> extends never ? [] : [event: Test<T>]
-  ) => any;
-
-  type T1 = Test2<{ type: 'toto'; rr?: '' }>;
-  const func: T1 = () => {};
-  func({});
 
   const sender = <T extends TEvent['type']>(type: T) => {
     type E = TEvent extends {
@@ -96,11 +85,23 @@ export function createInterpret<
     };
   };
 
+  type Matchers = StateValueFrom<
+    StateMachine<
+      TContext,
+      any,
+      TEvent,
+      TTypestate,
+      any,
+      any,
+      TResolvedTypesMeta
+    >
+  >;
+
   const output = {
     send: service.send,
     sender,
     subscribe: service.subscribe.bind(service),
-    matches: matches(store().value),
+    matches: (match: Matchers) => matches(store().value)(match as string),
     context,
     hasTag: (
       value: TResolvedTypesMeta extends TypegenEnabled
