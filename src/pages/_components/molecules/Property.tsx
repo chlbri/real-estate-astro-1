@@ -1,5 +1,3 @@
-/** @jsxImportSource solid-js */
-
 import type { Property as P } from '@-backend/data/main';
 import { removePublic } from '@-backend/data/removePublic';
 import type { Component } from 'solid-js';

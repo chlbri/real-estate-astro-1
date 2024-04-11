@@ -1,5 +1,3 @@
-/** @jsxImportSource solid-js */
-
 import type { Component } from 'solid-js';
 
 type Props = {

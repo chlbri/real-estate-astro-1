@@ -1,5 +1,3 @@
-/** @jsxImportSource solid-js */
-
 import { sleep } from '@-utils/sleep';
 import {
   Component,

@@ -1,5 +1,3 @@
-/** @jsxImportSource solid-js */
-
 import type { Accessor, Component } from 'solid-js';
 import { ArrowDown } from '../../_shared/atoms/icons/ArrowDown';
 import { ArrowUp } from '../../_shared/atoms/icons/ArrowUp';

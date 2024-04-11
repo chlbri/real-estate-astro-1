@@ -1,5 +1,3 @@
-/** @jsxImportSource solid-js */
-
 import type { Component } from 'solid-js';
 import { LocationPin } from '../../_shared/atoms/icons/LocationPin';
 import { ArrowToggle } from '../molecules/ArrowToggle';

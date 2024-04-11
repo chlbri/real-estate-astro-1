@@ -1,8 +1,6 @@
-/** @jsxImportSource solid-js */
-
 import type { Component } from 'solid-js';
-import { CrossIcon } from './icons/Cross';
 import { rinit } from './RinitSearch.hooks';
+import { CrossIcon } from './icons/Cross';
 
 type Props = {
   class?: string;

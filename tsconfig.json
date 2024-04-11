@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "jsx": "react",
+    "jsx": "preserve",
     // #region Base
     // Enable top-level await, and other modern ESM features.
     "target": "ESNext",
@@ -48,6 +48,7 @@
       "@-hooks/*": ["src/hooks/*"],
       "@-backend/*": ["src/backend/*"],
       "@-constants/*": ["src/constants/*"]
-    }
+    },
+    "jsxImportSource": "solid-js"
   }
 }

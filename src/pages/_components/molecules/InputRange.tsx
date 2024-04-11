@@ -1,5 +1,3 @@
-/** @jsxImportSource solid-js */
-
 import { createDeferred, type Accessor, type Component } from 'solid-js';
 import { twMerge } from 'tailwind-merge';
 

@@ -1,7 +1,5 @@
-/** @jsxImportSource solid-js */
-
-import { HomeIcon } from '../../_shared/atoms/icons/Home';
 import type { Component } from 'solid-js';
+import { HomeIcon } from '../../_shared/atoms/icons/Home';
 import { ArrowToggle } from '../molecules/ArrowToggle';
 import {
   canBeOpened,

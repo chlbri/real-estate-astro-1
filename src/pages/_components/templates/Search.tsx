@@ -1,5 +1,3 @@
-/** @jsxImportSource solid-js */
-
 import { Component } from 'solid-js';
 import { RinitSearch } from '../atoms/RinitSearch';
 import { DropdownCountry } from '../organisms/DropdownCountry';
