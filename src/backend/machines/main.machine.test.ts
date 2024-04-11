@@ -1,6 +1,6 @@
-import { MAIN_DATA } from '@-backend/data/main';
+import { MAIN_DATA, Property } from '@-backend/data/main';
 import { THROTTLE_TIME, TIME_BETWEEN_REQUESTS } from '@-constants/numbers';
-import { testInterpret } from '@-hooks/testInterpret';
+import { interpret } from '@bemedev/x-test';
 import { machine as machine1 } from './main.machine';
 import { Context } from './main.machine.types';
 
@@ -38,25 +38,49 @@ describe('Acceptation', () => {
 
 describe('Workflows', () => {
   // #region Preparation
-  const service = testInterpret(machine);
+  const service = interpret(machine);
+
+  beforeAll(() => {
+    service.start();
+  });
+
+  afterAll(() => {
+    service.stop();
+  });
 
   // #region Hooks
+  const _throttle = () => service.advanceTime(THROTTLE_TIME + 1);
   const throttle = (length = 1) => {
-    const inc = () => service.advanceTime(THROTTLE_TIME + 1);
     const incs = Array.from({ length }).fill(
-      inc
+      _throttle
     ) as (() => Promise<void>)[];
     return Promise.all(incs.map((inc) => inc()));
   };
+
   const waitForNext = () => service.advanceTime(TIME_BETWEEN_REQUESTS + 1);
+  type Filter = (property: Property) => boolean;
+  const useFiltered = (filter: Filter) => {
+    const expected = MAIN_DATA.filter(filter);
+    const accessor = (ctx: Context) => ctx.ui.data.filtered;
 
-  const accessor = (ctx: Context) => ctx.ui.data.filtered;
+    const func = () => service.context(expected, accessor);
+    return func;
+  };
+
+  const useRinit = () => {
+    return afterAll(() => {
+      service.send('__RINIT__');
+      return waitForNext();
+    });
+  };
   // #endregion
 
   // #endregion
 
-  describe('#1: It will filter by country', () => {
+  describe('Workflow 1: It will filter by country', () => {
+    useRinit();
     const country = 'United States';
+
     test('#1: TOGLLE', () => {
       service.send('COUNTRY/TOGGLE');
     });
@@ -73,25 +97,15 @@ describe('Workflows', () => {
       await waitForNext();
     });
 
-    test('#4: Test the filtered data', () => {
-      const expected = MAIN_DATA.filter(
-        (data) => data.country === country
-      );
-      const check = service.context({
-        expected,
-        accessor,
-      });
-
-      expect(check).toEqual(true);
-    });
-
-    test('#5: __RINIT__', async () => {
-      service.send('__RINIT__');
-      await waitForNext();
-    });
+    test(
+      '#4: Test the filtered data',
+      useFiltered((data) => data.country === country)
+    );
   });
 
   describe('#2: It will filter by country twice', async () => {
+    useRinit();
+
     const country1 = 'United States';
     const country2 = 'Canada';
 
@@ -111,18 +125,10 @@ describe('Workflows', () => {
       await waitForNext();
     });
 
-    test('#4: Test the filtered data', () => {
-      const expected = MAIN_DATA.filter(
-        (data) => data.country === country1
-      );
-
-      const check = service.context({
-        expected,
-        accessor,
-      });
-
-      expect(check).toEqual(true);
-    });
+    test(
+      '#4: Test the filtered data',
+      useFiltered((data) => data.country === country1)
+    );
 
     test('#5: Wait for next', async () => {
       await waitForNext();
@@ -144,26 +150,14 @@ describe('Workflows', () => {
       await waitForNext();
     });
 
-    test('#9: Test the filtered data', () => {
-      const expected = MAIN_DATA.filter(
-        (data) => data.country === country2
-      );
-
-      const check = service.context({
-        expected,
-        accessor,
-      });
-
-      expect(check).toEqual(true);
-    });
-
-    test('#10: __RINIT__', async () => {
-      service.send('__RINIT__');
-      await waitForNext();
-    });
+    test(
+      '#9: Test the filtered data',
+      useFiltered((data) => data.country === country2)
+    );
   });
 
   describe('#3: It will filter by type', async () => {
+    useRinit();
     const propertyType = 'Apartment';
 
     test('#1: TOGGLE', () => {
@@ -182,26 +176,14 @@ describe('Workflows', () => {
       await waitForNext();
     });
 
-    test('#4: Test the filtered data', () => {
-      const expected = MAIN_DATA.filter(
-        (data) => data.type === propertyType
-      );
-
-      const check = service.context({
-        expected,
-        accessor,
-      });
-
-      expect(check).toEqual(true);
-    });
-
-    test('#5: __RINIT__', async () => {
-      service.send('__RINIT__');
-      await waitForNext();
-    });
+    test(
+      '#4: Test the filtered data',
+      useFiltered(({ type }) => type === propertyType)
+    );
   });
 
   describe('#4: It will filter by type twice', async () => {
+    useRinit();
     const propertyType1 = 'Apartment';
     const propertyType2 = 'House';
 
@@ -221,18 +203,10 @@ describe('Workflows', () => {
       await waitForNext();
     });
 
-    test('#4: Test the filtered data', () => {
-      const expected = MAIN_DATA.filter(
-        (data) => data.type === propertyType1
-      );
-
-      const check = service.context({
-        expected,
-        accessor,
-      });
-
-      expect(check).toEqual(true);
-    });
+    test(
+      '#4: Test the filtered data',
+      useFiltered(({ type }) => type === propertyType1)
+    );
 
     test('#5: Wait for next', async () => {
       await waitForNext();
@@ -254,26 +228,14 @@ describe('Workflows', () => {
       await waitForNext();
     });
 
-    test('#9: Test the filtered data', () => {
-      const expected = MAIN_DATA.filter(
-        (data) => data.type === propertyType2
-      );
-
-      const check = service.context({
-        expected,
-        accessor,
-      });
-
-      expect(check).toEqual(true);
-    });
-
-    test('#10: __RINIT__', async () => {
-      service.send('__RINIT__');
-      await waitForNext();
-    });
+    test(
+      '#9: Test the filtered data',
+      useFiltered(({ type }) => type === propertyType2)
+    );
   });
 
   describe('#5: It will filter by price range', async () => {
+    useRinit();
     const inferiorOrEqualTo = 200_000;
     const superiorOrEqualTo = 100_000;
 
@@ -296,27 +258,17 @@ describe('Workflows', () => {
       await waitForNext();
     });
 
-    test('#4: Test the filtered data', () => {
-      const expected = MAIN_DATA.filter(
+    test(
+      '#4: Test the filtered data',
+      useFiltered(
         ({ price }) =>
           price >= superiorOrEqualTo && price <= inferiorOrEqualTo
-      );
-
-      const check = service.context({
-        expected,
-        accessor,
-      });
-
-      expect(check).toEqual(true);
-    });
-
-    test('#5: __RINIT__', async () => {
-      service.send('__RINIT__');
-      await waitForNext();
-    });
+      )
+    );
   });
 
-  describe('#6: It will filter by price range twice / three times', async () => {
+  describe('#6: It will filter by price range twice / three times', () => {
+    useRinit();
     const inferiorOrEqualTo1 = 200_000;
     const superiorOrEqualTo1 = 100_000;
     const inferiorOrEqualTo2 = 100_000;
@@ -343,19 +295,13 @@ describe('Workflows', () => {
     });
     // #endregion
 
-    test('#4: Test the filtered data', () => {
-      const expected = MAIN_DATA.filter(
+    test(
+      '#4: Test the filtered data',
+      useFiltered(
         ({ price }) =>
           price >= superiorOrEqualTo1 && price <= inferiorOrEqualTo1
-      );
-
-      const check = service.context({
-        expected,
-        accessor,
-      });
-
-      expect(check).toEqual(true);
-    });
+      )
+    );
 
     // #region Second Event
     test('#5: INPUT - INFERIOR', () => {
@@ -371,19 +317,13 @@ describe('Workflows', () => {
     });
     // #endregion
 
-    test('#7: Test the filtered data', () => {
-      const expected = MAIN_DATA.filter(
+    test(
+      '#7: Test the filtered data',
+      useFiltered(
         ({ price }) =>
           price >= superiorOrEqualTo1 && price <= inferiorOrEqualTo2
-      );
-
-      const check = service.context({
-        expected,
-        accessor,
-      });
-
-      expect(check).toEqual(true);
-    });
+      )
+    );
 
     // #region Third Event
     test('#8: INPUT - SUPERIOR', () => {
@@ -399,27 +339,17 @@ describe('Workflows', () => {
     });
     // #endregion
 
-    test('#10: Test the filtered data', () => {
-      const expected = MAIN_DATA.filter(
+    test(
+      '#10: Test the filtered data',
+      useFiltered(
         ({ price }) =>
           price >= superiorOrEqualTo2 && price <= inferiorOrEqualTo2
-      );
-
-      const check = service.context({
-        expected,
-        accessor,
-      });
-
-      expect(check).toEqual(true);
-    });
-
-    test('#11: __RINIT__', async () => {
-      service.send('__RINIT__');
-      await waitForNext();
-    });
+      )
+    );
   });
 
   describe('#7: It will filter all', async () => {
+    useRinit();
     const inferiorOrEqualTo = 100_000;
     const superiorOrEqualTo = 20_000;
     const country = 'United States';
@@ -485,32 +415,24 @@ describe('Workflows', () => {
 
     // #endregion
 
-    test('#10: Test the filtered data', () => {
-      const expected = MAIN_DATA.filter(({ price }) => {
-        return price >= superiorOrEqualTo && price <= inferiorOrEqualTo;
+    test(
+      '#10: Test the filtered data',
+      useFiltered((data) => {
+        const isType = data.type === propertyType;
+        const isCountry = data.country === country;
+        const isPrice =
+          data.price >= superiorOrEqualTo &&
+          data.price <= inferiorOrEqualTo;
+
+        const check = isPrice && isType && isCountry;
+
+        return check;
       })
-        .filter(({ type }) => {
-          return type === propertyType;
-        })
-        .filter((data) => {
-          return data.country === country;
-        });
-
-      const check = service.context({
-        expected,
-        accessor,
-      });
-
-      expect(check).toEqual(true);
-    });
-
-    test('#11: __RINIT__', async () => {
-      service.send('__RINIT__');
-      await waitForNext();
-    });
+    );
   });
 
-  describe('#8: It will filter only one request if all requests are sent at same time', async () => {
+  describe('#8: It will filter only one request if all requests are sent at same time', () => {
+    useRinit();
     const inferiorOrEqualTo = 100_000;
     const superiorOrEqualTo = 30_000;
     const country = 'United States';
@@ -550,26 +472,14 @@ describe('Workflows', () => {
     });
     // #endregion
 
-    test('#6: Wait for database', async () => {
-      await waitForNext();
-    });
+    test('#6: Wait for database', () => waitForNext());
 
-    test('#7: Test the filtered data', () => {
-      const expected = MAIN_DATA.filter(({ price }) => {
-        return price >= superiorOrEqualTo && price <= inferiorOrEqualTo;
-      });
-
-      const check = service.context({
-        expected,
-        accessor,
-      });
-
-      expect(check).toEqual(true);
-    });
-
-    test('#8: __RINIT__', async () => {
-      service.send('__RINIT__');
-      await waitForNext();
-    });
+    test(
+      '#7: Test the filtered data',
+      useFiltered(
+        ({ price }) =>
+          price >= superiorOrEqualTo && price <= inferiorOrEqualTo
+      )
+    );
   });
 });

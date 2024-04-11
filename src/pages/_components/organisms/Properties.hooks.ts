@@ -4,6 +4,4 @@ export const getFilteredData = context(
   (context) => context.ui.data.filtered ?? []
 );
 
-export const isBusy = () => {
-  return hasTag('busy');
-};
+export const isBusy = hasTag('busy');

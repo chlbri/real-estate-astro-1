@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
+    "dev:host": "pnpm run dev --host",
     "start": "astro build && astro preview",
     "build": "astro build",
     "preview": "astro preview",
@@ -17,6 +18,7 @@
     "@astrojs/solid-js": "^1.2.0",
     "@astrojs/tailwind": "^2.1.0",
     "@bemedev/decompose": "^0.1.6",
+    "@bemedev/x-solidjs": "^0.0.2",
     "@xstate/immer": "^0.3.3",
     "astro": "^1.5.0",
     "dequal": "^2.0.3",
@@ -27,7 +29,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",
-    "@bemedev/x-test": "^1.0.0",
+    "@bemedev/x-matches": "^0.0.3",
+    "@bemedev/x-test": "^1.1.0",
     "@xstate/inspect": "^0.7.0",
     "jest-diff": "^29.7.0",
     "tailwindcss": "^3.1.8",

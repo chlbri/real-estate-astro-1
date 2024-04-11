@@ -1,3 +1,4 @@
+import buildMatches from '@bemedev/x-matches';
 import { Accessor, createMemo, createRoot, from } from 'solid-js';
 import {
   AreAllImplementationsAssumedToBeProvided,
@@ -11,13 +12,13 @@ import {
   ServiceMap,
   State,
   StateMachine,
+  StateValue,
   StateValueFrom,
   TypegenDisabled,
   TypegenEnabled,
   Typestate,
   interpret,
 } from 'xstate';
-import { matches } from './helpers/matches';
 
 export function createInterpret<
   TContext,
@@ -85,7 +86,7 @@ export function createInterpret<
     };
   };
 
-  type Matchers = StateValueFrom<
+  type _Matchers = StateValueFrom<
     StateMachine<
       TContext,
       any,
@@ -97,11 +98,15 @@ export function createInterpret<
     >
   >;
 
+  type Matchers = _Matchers extends StateValue ? _Matchers : never;
+
+  const matches = buildMatches(store().value as Matchers);
+
   const output = {
     send: service.send,
     sender,
     subscribe: service.subscribe.bind(service),
-    matches: (match: Matchers) => matches(store().value)(match as string),
+    matches,
     context,
     hasTag: (
       value: TResolvedTypesMeta extends TypegenEnabled
