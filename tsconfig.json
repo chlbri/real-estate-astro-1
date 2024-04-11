@@ -47,6 +47,7 @@
       "@-utils/*": ["src/utils/*"],
       "@-hooks/*": ["src/hooks/*"],
       "@-backend/*": ["src/backend/*"],
+      "@-images/*": ["public/images/*"],
       "@-constants/*": ["src/constants/*"]
     },
     "jsxImportSource": "solid-js"

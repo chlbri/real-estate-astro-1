@@ -1,11 +1,12 @@
 ---
 import type { Property } from '@-backend/data/main';
 import { removePublic } from '@-backend/data/removePublic';
+import { Image } from 'astro:assets';
+import MainLayout from '../../_shared/MainLayout.astro';
 import { AreaIcon } from '../../_shared/atoms/icons/Area';
 import { BackIcon } from '../../_shared/atoms/icons/Back';
 import { BathIcon } from '../../_shared/atoms/icons/Bath';
 import { BedIcon } from '../../_shared/atoms/icons/Bed';
-import MainLayout from '../../_shared/MainLayout.astro';
 import { ContactForm } from './organisms/ContactForm';
 
 export type Props = {
@@ -60,7 +61,12 @@ const propertyImage = removePublic(property.imageLg);
       <main class='flex flex-col items-start gap-8 xl:flex-row'>
         <!-- #region Carrousel Image -->
         <article class='max-w-[768px] flex flex-col space-y-6'>
-          <img src={propertyImage} alt='Property Image' />
+          <Image
+            src={propertyImage}
+            alt='Property Image'
+            width={768}
+            height={500}
+          />
           <div class='flex gap-x-6 text-violet-700'>
             <div class='flex gap-x-2 items-center'>
               <BedIcon />
@@ -85,7 +91,12 @@ const propertyImage = removePublic(property.imageLg);
         >
           <div class='flex items-center gap-x-4 mb-8'>
             <div class='w-20 h-20 p-1 border border-gray-300 rounded-full'>
-              <img src={agentImage} />
+              <Image
+                src={agentImage}
+                width={143}
+                height={143}
+                alt="Agent's image"
+              />
             </div>
             <div>
               <div class='font-bold text-lg'>{property.agent.name}</div>
