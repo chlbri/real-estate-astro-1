@@ -5,7 +5,6 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "dev:host": "pnpm run dev --host",
     "start": "astro build && astro preview",
     "build": "astro build",
     "preview": "astro preview",
