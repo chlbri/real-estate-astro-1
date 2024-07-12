@@ -1,8 +1,8 @@
 import type { Property } from '@-backend/data/main';
 import { LOCAL_STORAGE_ID } from '@-constants/strings';
 import { assign } from '@xstate/immer';
-import { createMachine } from 'xstate';
-import { escalate, send } from 'xstate/lib/actions';
+import { createMachine, sendTo } from 'xstate';
+import { escalate } from 'xstate/lib/actions';
 import { QueryFilter, filterMachine } from './filter.machine';
 import { BeforeQuery, queryBuilderMachine } from './queryBuilder.machine';
 
@@ -21,7 +21,7 @@ export const hydrationMachine = createMachine(
   {
     predictableActionArguments: true,
     preserveActionOrder: true,
-    tsTypes: {} as import('./hydration.machine.typegen.d.ts').Typegen0,
+    tsTypes: {} as import('./hydration.machine.typegen').Typegen0,
     schema: {
       context: {} as Context,
       services: {} as {
@@ -88,10 +88,10 @@ export const hydrationMachine = createMachine(
   },
   {
     actions: {
-      sendQuery: send(
-        ({ currentQuery: query }) => ({ type: 'QUERY', query }),
-        { to: 'queryBuilderMachine' }
-      ),
+      sendQuery: sendTo('queryBuilderMachine', ({ query }) => ({
+        type: 'QUERY',
+        query: query,
+      })),
 
       rethrow: escalate((_, { data }) => data),
 
@@ -121,5 +121,5 @@ export const hydrationMachine = createMachine(
       filterMachine,
       queryBuilderMachine,
     },
-  }
+  },
 );

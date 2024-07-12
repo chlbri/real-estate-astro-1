@@ -309,7 +309,7 @@ export const machine = createMachine(
           type: EVENTS.INPUT,
           input,
         }),
-        { to: MACHINES.DROPDOWNS.COUNTRY }
+        { to: MACHINES.DROPDOWNS.COUNTRY },
       ),
 
       toggleCountry: assign((context, { open }) => {
@@ -331,7 +331,7 @@ export const machine = createMachine(
           type: EVENTS.INPUT,
           input,
         }),
-        { to: MACHINES.DROPDOWNS.TYPE }
+        { to: MACHINES.DROPDOWNS.TYPE },
       ),
 
       toggleType: assign((context, { open }) => {
@@ -349,7 +349,7 @@ export const machine = createMachine(
           type: EVENTS.INPUT,
           input,
         }),
-        { to: MACHINES.INPUTS.PRICE.SUPERIOR_OR_EQUAL_TO, delay: 10 }
+        { to: MACHINES.INPUTS.PRICE.SUPERIOR_OR_EQUAL_TO, delay: 10 },
       ),
 
       assignInputSuperior: assign((context, { input }) => {
@@ -361,7 +361,7 @@ export const machine = createMachine(
           type: EVENTS.INPUT,
           input,
         }),
-        { to: MACHINES.INPUTS.PRICE.INFERIOR_OR_EQUAL_TO, delay: 10 }
+        { to: MACHINES.INPUTS.PRICE.INFERIOR_OR_EQUAL_TO, delay: 10 },
       ),
 
       assignInputInferior: assign((context, { input }) => {
@@ -431,7 +431,7 @@ export const machine = createMachine(
         localStorage.removeItem(LOCAL_STORAGE_ID);
       },
     },
-  }
+  },
 );
 
 export default machine;

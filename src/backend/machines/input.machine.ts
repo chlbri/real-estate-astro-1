@@ -74,5 +74,5 @@ export const inputMachine = createMachine(
     },
 
     delays: { THROTTLE_TIME },
-  }
+  },
 );
