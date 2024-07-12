@@ -90,7 +90,7 @@ export const hydrationMachine = createMachine(
     actions: {
       sendQuery: sendTo('queryBuilderMachine', ({ query }) => ({
         type: 'QUERY',
-        query: query,
+        query,
       })),
 
       rethrow: escalate((_, { data }) => data),

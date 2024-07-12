@@ -4,7 +4,7 @@ import { ALL_OPTIONS, LOCAL_STORAGE_ID } from '@-constants/strings';
 import { isBrowser } from '@-utils/environment';
 import { assign } from '@xstate/immer';
 import { createMachine } from 'xstate';
-import { forwardTo, send } from 'xstate/lib/actions';
+import { forwardTo, raise, send } from 'xstate/lib/actions';
 import { dropdownMachine } from './dropdown.machine';
 import { QueryFilter, filterMachine } from './filter.machine';
 import { hydrationMachine } from './hydration.machine';
@@ -16,7 +16,7 @@ export const machine = createMachine(
   {
     predictableActionArguments: true,
     preserveActionOrder: true,
-    tsTypes: {} as import('./main.machine.typegen.d.ts').Typegen0,
+    tsTypes: {} as import('./main.machine.typegen').Typegen0,
     schema: {
       context: {} as Context,
       events: {} as Events,
@@ -386,9 +386,9 @@ export const machine = createMachine(
         };
       }),
 
-      sendQuery: send((context) => {
+      sendQuery: raise((context) => {
         const query = context.ui.data.currentQuery;
-        return { type: 'QUERY', query };
+        return { type: 'QUERY' as const, query } as any;
       }),
 
       forward: forwardTo('queryBuilderMachine'),
