@@ -24,7 +24,7 @@ export const machine = createMachine(
         generateLists: {
           data: { types?: Set<PropertyType>; countries?: Set<string> };
         };
-        saveFiltered: { data: void };
+        resetLocalQuery: { data: void };
         hydrationMachine: { data: HydrationData | undefined };
         filterMachine: { data: Property[] | undefined };
         dropdownMachine: { data: void };
@@ -428,7 +428,7 @@ export const machine = createMachine(
       },
 
       resetLocalQuery: async () => {
-        localStorage.removeItem(LOCAL_STORAGE_ID);
+        return localStorage.removeItem(LOCAL_STORAGE_ID);
       },
     },
   },
