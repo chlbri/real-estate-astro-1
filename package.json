@@ -16,6 +16,7 @@
   "dependencies": {
     "@astrojs/solid-js": "^5.0.1",
     "@astrojs/tailwind": "^5.1.4",
+    "@astrojs/vercel": "^8.0.1",
     "@bemedev/decompose": "^0.7.3",
     "@bemedev/x-solidjs": "^0.0.2",
     "@xstate/immer": "^0.3.3",
